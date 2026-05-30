@@ -1,9 +1,16 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useAuth } from '../hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Alert, Button, Container, Row, Col } from 'react-bootstrap';
+import { setToken } from '../store/slices/authSlice';
+import { authAPI } from '../services/api';
 
 function LoginPage() {
-  const { login, error, loading } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const initialValues = {
     username: '',
@@ -21,8 +28,21 @@ function LoginPage() {
     return errors;
   };
 
-  const handleSubmit = async (values) => {
-    await login(values.username, values.password);
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await authAPI.login(values.username, values.password);
+      dispatch(setToken(response.data.token));
+      navigate('/');
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Ошибка авторизации';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -1,37 +1,67 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Container, Button, Alert } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import { setChannels, setCurrentChannel, setLoading } from '../store/slices/channelsSlice';
+import { setMessages } from '../store/slices/messagesSlice';
+import { channelsAPI, messagesAPI } from '../services/api';
+import ChannelsList from '../components/ChannelsList';
+import MessagesList from '../components/MessagesList';
+import MessageForm from '../components/MessageForm';
 
 function ChatPage() {
-  const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { token, isAuthenticated } = useSelector((state) => state.auth);
+  const { currentChannelId } = useSelector((state) => state.channels);
 
   useEffect(() => {
-    // Проверяем наличие токена при загрузке страницы
-    if (!token) {
+    if (!token || !isAuthenticated) {
       navigate('/login');
+      return;
     }
-  }, [token, navigate]);
 
-  // Если нет токена, показываем загрузку (чтобы избежать моргания)
-  if (!token) {
-    return <Container className="mt-5"><p>Перенаправление на страницу входа...</p></Container>;
+    const fetchData = async () => {
+      dispatch(setLoading(true));
+      try {
+        const [channelsResponse, messagesResponse] = await Promise.all([
+          channelsAPI.getAll(),
+          messagesAPI.getAll(),
+        ]);
+
+        dispatch(setChannels(channelsResponse.data));
+        dispatch(setMessages(messagesResponse.data));
+
+        // Устанавливаем первый канал как текущий, если ещё не выбран
+        if (!currentChannelId && channelsResponse.data.length > 0) {
+          dispatch(setCurrentChannel(channelsResponse.data[0].id));
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
+      } finally {
+        dispatch(setLoading(false));
+      }
+    };
+
+    fetchData();
+  }, [token, isAuthenticated, navigate, dispatch]);
+
+  if (!token || !isAuthenticated) {
+    return null; // Редирект произойдёт в useEffect
   }
 
   return (
-    <Container className="mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Чат</h1>
-        <Button variant="outline-danger" onClick={logout}>
-          Выйти
-        </Button>
+    <div className="container-fluid">
+      <div className="row">
+        <ChannelsList />
+        <div className="col-9 d-flex flex-column vh-100">
+          <MessagesList />
+          <MessageForm />
+        </div>
       </div>
-      <Alert variant="info">
-        Здесь будет чат (реализуется позже)
-      </Alert>
-      <p>Вы успешно авторизованы!</p>
-    </Container>
+    </div>
   );
 }
 
