@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create();
 
-// Добавляем токен в заголовки, если он есть
+// Интерсептор для добавления токена
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -11,19 +11,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Экспортируем authAPI для логина
 export const authAPI = {
   login: (username, password) => api.post('/api/v1/login', { username, password }),
 };
 
-export const channelsAPI = {
-  getAll: () => api.get('/api/v1/channels'),
-  create: (name) => api.post('/api/v1/channels', { name }),
-  remove: (id) => api.delete(`/api/v1/channels/${id}`),
-};
-
-export const messagesAPI = {
-  getAll: () => api.get('/api/v1/messages'),
-  send: (channelId, body) => api.post('/api/v1/messages', { channelId, body }),
-};
-
+// Экспортируем api по умолчанию для других запросов
 export default api;

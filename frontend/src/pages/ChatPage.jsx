@@ -1,67 +1,116 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setChannels, setCurrentChannel, setLoading } from '../store/slices/channelsSlice';
-import { setMessages } from '../store/slices/messagesSlice';
-import { channelsAPI, messagesAPI } from '../services/api';
-import ChannelsList from '../components/ChannelsList';
-import MessagesList from '../components/MessagesList';
-import MessageForm from '../components/MessageForm';
+import { useNavigate } from 'react-router-dom';
+import { fetchChatData, setCurrentChannel, clearError } from '../store/chatSlice';
+import { useAuth } from '../hooks/useAuth';
+import { Container, Row, Col, ListGroup, Alert, Button, Spinner } from 'react-bootstrap';
 
 function ChatPage() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { token, isAuthenticated } = useSelector((state) => state.auth);
-  const { currentChannelId } = useSelector((state) => state.channels);
+  const navigate = useNavigate();
+  const { token, logout } = useAuth();
+  
+  const { channels, messages, currentChannelId, loading, error } = useSelector(
+    (state) => state.chat
+  );
 
+  // Загружаем данные при монтировании компонента
   useEffect(() => {
-    if (!token || !isAuthenticated) {
+    if (!token) {
       navigate('/login');
       return;
     }
+    
+    dispatch(fetchChatData());
+  }, [token, dispatch, navigate]);
 
-    const fetchData = async () => {
-      dispatch(setLoading(true));
-      try {
-        const [channelsResponse, messagesResponse] = await Promise.all([
-          channelsAPI.getAll(),
-          messagesAPI.getAll(),
-        ]);
+  // Фильтруем сообщения для текущего канала
+  const currentMessages = messages.filter(
+    (msg) => msg.channelId === currentChannelId
+  );
 
-        dispatch(setChannels(channelsResponse.data));
-        dispatch(setMessages(messagesResponse.data));
+  // Получаем имя текущего канала
+  const currentChannel = channels.find((ch) => ch.id === currentChannelId);
 
-        // Устанавливаем первый канал как текущий, если ещё не выбран
-        if (!currentChannelId && channelsResponse.data.length > 0) {
-          dispatch(setCurrentChannel(channelsResponse.data[0].id));
-        }
-      } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        if (error.response?.status === 401) {
-          navigate('/login');
-        }
-      } finally {
-        dispatch(setLoading(false));
-      }
-    };
+  const handleChannelSelect = (channelId) => {
+    dispatch(setCurrentChannel(channelId));
+  };
 
-    fetchData();
-  }, [token, isAuthenticated, navigate, dispatch]);
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
-  if (!token || !isAuthenticated) {
-    return null; // Редирект произойдёт в useEffect
+  if (loading) {
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p>Загрузка данных чата...</p>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="danger">
+          <Alert.Heading>Ошибка загрузки</Alert.Heading>
+          <p>{error}</p>
+          <Button onClick={() => dispatch(fetchChatData())}>Повторить</Button>
+        </Alert>
+      </Container>
+    );
   }
 
   return (
-    <div className="container-fluid">
-      <div className="row">
-        <ChannelsList />
-        <div className="col-9 d-flex flex-column vh-100">
-          <MessagesList />
-          <MessageForm />
-        </div>
-      </div>
-    </div>
+    <Container fluid className="h-100">
+      <Row className="h-100">
+        {/* Список каналов слева */}
+        <Col md={3} className="bg-light p-3" style={{ height: '100vh', overflowY: 'auto' }}>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5>Каналы</h5>
+            <Button variant="outline-danger" size="sm" onClick={handleLogout}>
+              Выйти
+            </Button>
+          </div>
+          <ListGroup>
+            {channels.map((channel) => (
+              <ListGroup.Item
+                key={channel.id}
+                action
+                active={channel.id === currentChannelId}
+                onClick={() => handleChannelSelect(channel.id)}
+              >
+                # {channel.name}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Col>
+
+        {/* Область чата справа */}
+        <Col md={9} className="p-3" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <h4 className="mb-3">#{currentChannel?.name || 'Выберите канал'}</h4>
+          
+          {/* Сообщения */}
+          <div className="flex-grow-1 overflow-auto mb-3" style={{ maxHeight: 'calc(100vh - 150px)' }}>
+            {currentMessages.length === 0 ? (
+              <p className="text-muted">Нет сообщений в этом канале</p>
+            ) : (
+              currentMessages.map((msg) => (
+                <div key={msg.id} className="mb-2">
+                  <strong>{msg.username}:</strong> {msg.body}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Форма отправки сообщения (пока заглушка) */}
+          <div className="mt-auto">
+            <p className="text-muted small">Форма отправки сообщений будет здесь</p>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
