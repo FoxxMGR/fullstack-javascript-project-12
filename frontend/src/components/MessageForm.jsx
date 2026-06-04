@@ -1,38 +1,39 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-//import { sendMessage } from '../store/slices/messagesSlice';
+import { sendMessage } from '../store/slices/messagesSlice';
 
-function MessageForm() {
-  const [message, setMessage] = useState('');
+const MessageForm = () => {
+  const [text, setText] = useState('');
   const dispatch = useDispatch();
-  const { currentChannelId } = useSelector((state) => state.channels);
-  const { token } = useSelector((state) => state.auth);
+  const { currentChannelId, sending, error } = useSelector(state => state.messages);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim()) {
-      // Отправка сообщения будет реализована позже с WebSocket
-      console.log('Send message:', { channelId: currentChannelId, body: message });
-      setMessage('');
-    }
+    if (!text.trim() || sending) return;
+
+    dispatch(sendMessage({
+      channelId: currentChannelId,
+      body: text.trim()
+    })).then(() => {
+      setText(''); // Очищаем поле после успешной отправки
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 border-top">
-      <div className="input-group">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Введите сообщение..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button type="submit" className="btn btn-primary">
-          Отправить
-        </button>
-      </div>
+    <form onSubmit={handleSubmit} className="message-form">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Введите сообщение..."
+        disabled={sending}
+      />
+      <button type="submit" disabled={sending || !text.trim()}>
+        {sending ? 'Отправка...' : 'Отправить'}
+      </button>
+      {error && <div className="error">{error}</div>}
     </form>
   );
-}
+};
 
 export default MessageForm;
