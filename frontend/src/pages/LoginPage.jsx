@@ -1,6 +1,6 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Alert, Button, Container, Row, Col } from 'react-bootstrap';
 import { setToken } from '../store/slices/authSlice';
@@ -103,7 +103,9 @@ function LoginPage() {
               </Form>
             )}
           </Formik>
-          
+          <div className="text-center mt-3">
+  <Link to="/signup">Нет аккаунта? Зарегистрируйтесь</Link>
+</div>
           <div className="text-center mt-3 text-muted">
             <small>Тестовые данные: admin / admin</small>
           </div>

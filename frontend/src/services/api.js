@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Важно: НЕ указывайте baseURL, чтобы запросы шли через прокси
+
 const api = axios.create();
 
 api.interceptors.request.use((config) => {
@@ -13,6 +13,7 @@ api.interceptors.request.use((config) => {
 
 export const authAPI = {
   login: (username, password) => api.post('/api/v1/login', { username, password }),
+  signup: (username, password) => api.post('/api/v1/signup', { username, password }),
 };
 
 export default api;
