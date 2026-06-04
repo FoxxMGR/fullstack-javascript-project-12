@@ -1,39 +1,40 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { sendMessage } from '../store/slices/messagesSlice';
+import { useSelector } from 'react-redux';
+import { Form, Button } from 'react-bootstrap';
+import { sendMessage } from '../store/chatSlice';
+import { useDispatch } from 'react-redux';
 
-const MessageForm = () => {
-  const [text, setText] = useState('');
+function MessageForm() {
   const dispatch = useDispatch();
-  const { currentChannelId, sending, error } = useSelector(state => state.messages);
+  const { currentChannelId, sendingMessage } = useSelector((state) => state.chat);
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim() || sending) return;
-
-    dispatch(sendMessage({
-      channelId: currentChannelId,
-      body: text.trim()
-    })).then(() => {
-      setText(''); // Очищаем поле после успешной отправки
-    });
+    if (!message.trim() || sendingMessage) return;
+    
+    await dispatch(sendMessage({ channelId: currentChannelId, body: message.trim() })).unwrap();
+    setMessage('');
   };
 
+  if (!currentChannelId) return null;
+
   return (
-    <form onSubmit={handleSubmit} className="message-form">
-      <input
-        type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Введите сообщение..."
-        disabled={sending}
-      />
-      <button type="submit" disabled={sending || !text.trim()}>
-        {sending ? 'Отправка...' : 'Отправить'}
-      </button>
-      {error && <div className="error">{error}</div>}
-    </form>
+    <Form onSubmit={handleSubmit}>
+      <div className="d-flex gap-2">
+        <Form.Control
+          type="text"
+          placeholder="Введите сообщение..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={sendingMessage}
+        />
+        <Button type="submit" variant="primary" disabled={sendingMessage || !message.trim()}>
+          {sendingMessage ? 'Отправка...' : 'Отправить'}
+        </Button>
+      </div>
+    </Form>
   );
-};
+}
 
 export default MessageForm;

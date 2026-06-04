@@ -1,28 +1,43 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { setCurrentChannel } from '../store/slices/channelsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { ListGroup, Button } from 'react-bootstrap';
+import { setCurrentChannel, openModal } from '../store/chatSlice';
+import ChannelMenu from './ChannelMenu';
 
 function ChannelsList() {
   const dispatch = useDispatch();
-  const { items: channels, currentChannelId } = useSelector((state) => state.channels);
+  const { channels, currentChannelId } = useSelector((state) => state.chat);
+
+  const handleOpenModal = (type, channelId = null) => {
+    dispatch(openModal({ type, channelId }));
+  };
 
   return (
-    <div className="col-3 border-end vh-100 p-3">
-      <h5>Каналы</h5>
-      <ul className="nav flex-column">
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5>Каналы</h5>
+        <Button variant="outline-primary" size="sm" onClick={() => handleOpenModal('add')}>
+          + Добавить
+        </Button>
+      </div>
+      <ListGroup>
         {channels.map((channel) => (
-          <li key={channel.id} className="nav-item mb-2">
-            <button
-              className={`btn btn-sm w-100 text-start ${
-                currentChannelId === channel.id ? 'btn-primary' : 'btn-outline-secondary'
-              }`}
-              onClick={() => dispatch(setCurrentChannel(channel.id))}
-            >
-              # {channel.name}
-            </button>
-          </li>
+          <ListGroup.Item
+            key={channel.id}
+            action
+            active={channel.id === currentChannelId}
+            onClick={() => dispatch(setCurrentChannel(channel.id))}
+            className="d-flex justify-content-between align-items-center"
+          >
+            <span># {channel.name}</span>
+            <ChannelMenu 
+              channelId={channel.id} 
+              channelName={channel.name}
+              isDefault={channel.name === 'general'}
+            />
+          </ListGroup.Item>
         ))}
-      </ul>
-    </div>
+      </ListGroup>
+    </>
   );
 }
 
