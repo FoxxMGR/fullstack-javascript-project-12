@@ -1,8 +1,9 @@
 .PHONY: build start
 
 build:
-	npm ci
 	cd frontend && npm ci && npm run build
+	mkdir -p build
+	cp -r frontend/dist/* build/
 
 start:
-	npx start-server -s frontend/dist
+	npx @hexlet/chat-server
