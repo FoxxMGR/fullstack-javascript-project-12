@@ -1,16 +1,12 @@
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { Alert, Button, Container, Row, Col } from 'react-bootstrap';
-import { setToken } from '../store/slices/authSlice';
-import { authAPI } from '../services/api';
 
 function LoginPage() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
+  const { login, error, loading } = useAuth();
 
   const initialValues = {
     username: '',
@@ -20,36 +16,23 @@ function LoginPage() {
   const validate = (values) => {
     const errors = {};
     if (!values.username) {
-      errors.username = 'Обязательное поле';
+      errors.username = t('errors.required');
     }
     if (!values.password) {
-      errors.password = 'Обязательное поле';
+      errors.password = t('errors.required');
     }
     return errors;
   };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await authAPI.login(values.username, values.password);
-      dispatch(setToken(response.data.token));
-      navigate('/');
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Ошибка авторизации';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-    }
+  const handleSubmit = async (values) => {
+    await login(values.username, values.password);
   };
 
   return (
     <Container className="mt-5">
       <Row className="justify-content-md-center">
         <Col md={6}>
-          <h2 className="text-center mb-4">Вход в чат</h2>
+          <h2 className="text-center mb-4">{t('login.title')}</h2>
           
           {error && (
             <Alert variant="danger" className="mb-3">
@@ -66,28 +49,28 @@ function LoginPage() {
               <Form>
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label">
-                    Имя пользователя
+                    {t('login.username')}
                   </label>
                   <Field
                     type="text"
                     id="username"
                     name="username"
                     className="form-control"
-                    placeholder="Введите имя пользователя"
+                    placeholder={t('login.username')}
                   />
                   <ErrorMessage name="username" component="div" className="text-danger" />
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
-                    Пароль
+                    {t('login.password')}
                   </label>
                   <Field
                     type="password"
                     id="password"
                     name="password"
                     className="form-control"
-                    placeholder="Введите пароль"
+                    placeholder={t('login.password')}
                   />
                   <ErrorMessage name="password" component="div" className="text-danger" />
                 </div>
@@ -98,16 +81,17 @@ function LoginPage() {
                   className="w-100"
                   disabled={isSubmitting || loading}
                 >
-                  {loading ? 'Вход...' : 'Войти'}
+                  {loading ? '...' : t('login.submit')}
                 </Button>
               </Form>
             )}
           </Formik>
+          
           <div className="text-center mt-3">
-  <Link to="/signup">Нет аккаунта? Зарегистрируйтесь</Link>
-</div>
+            <Link to="/signup">{t('login.signupLink')}</Link>
+          </div>
           <div className="text-center mt-3 text-muted">
-            <small>Тестовые данные: admin / admin</small>
+            <small>{t('login.testData')}</small>
           </div>
         </Col>
       </Row>

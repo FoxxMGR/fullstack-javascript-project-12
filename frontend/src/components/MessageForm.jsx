@@ -3,8 +3,10 @@ import { useSelector } from 'react-redux';
 import { Form, Button } from 'react-bootstrap';
 import { sendMessage } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 function MessageForm() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentChannelId, sendingMessage } = useSelector((state) => state.chat);
   const [message, setMessage] = useState('');
@@ -24,13 +26,13 @@ function MessageForm() {
       <div className="d-flex gap-2">
         <Form.Control
           type="text"
-          placeholder="Введите сообщение..."
+          placeholder={t('chat.messagePlaceholder')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           disabled={sendingMessage}
         />
         <Button type="submit" variant="primary" disabled={sendingMessage || !message.trim()}>
-          {sendingMessage ? 'Отправка...' : 'Отправить'}
+          {sendingMessage ? t('chat.sending') : t('chat.send')}
         </Button>
       </div>
     </Form>

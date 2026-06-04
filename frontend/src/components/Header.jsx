@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
 
 function Header() {
+  const { t } = useTranslation();
   const { token, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -15,16 +17,16 @@ function Header() {
     <Navbar bg="light" expand="lg" className="mb-4">
       <Container>
         <Navbar.Brand as={Link} to="/">
-          Hexlet Chat
+          {t('header.brand')}
         </Navbar.Brand>
         <Nav className="ms-auto">
           {token ? (
             <Button variant="outline-danger" size="sm" onClick={handleLogout}>
-              Выйти
+              {t('header.logout')}
             </Button>
           ) : (
             <Button variant="outline-primary" size="sm" as={Link} to="/login">
-              Войти
+              {t('header.login')}
             </Button>
           )}
         </Nav>

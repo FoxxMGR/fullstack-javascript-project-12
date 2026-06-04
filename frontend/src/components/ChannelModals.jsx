@@ -4,26 +4,28 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Form as FormikForm, Field } from 'formik';
 import * as Yup from 'yup';
 import { addChannel, renameChannel, deleteChannel, closeModal } from '../store/chatSlice';
+import { useTranslation } from 'react-i18next';
 
-const getValidationSchema = (channels, currentName = '') => {
+const getValidationSchema = (channels, t, currentName = '') => {
   return Yup.object({
     name: Yup.string()
       .trim()
-      .min(3, 'От 3 до 20 символов')
-      .max(20, 'От 3 до 20 символов')
-      .test('unique', 'Такое имя уже существует', (value) => {
+      .min(3, t('yup.usernameMin'))
+      .max(20, t('yup.usernameMax'))
+      .test('unique', t('errors.unique'), (value) => {
         if (!value) return true;
         const trimmed = value.trim();
         const isSameAsCurrent = trimmed === currentName;
         return isSameAsCurrent || !channels.some(ch => ch.name === trimmed);
       })
-      .required('Обязательное поле'),
+      .required(t('errors.required')),
   });
 };
 
 function ChannelModals() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { modal, channels, currentChannelId } = useSelector((state) => state.chat);
+  const { modal, channels } = useSelector((state) => state.chat);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -55,31 +57,30 @@ function ChannelModals() {
   };
 
   const currentChannel = channels.find(ch => ch.id === modal.channelId);
-  const isDefaultChannel = currentChannel?.name === 'general';
 
   // Модалка добавления
   if (modal.type === 'add') {
-    const validationSchema = getValidationSchema(channels);
+    const validationSchema = getValidationSchema(channels, t);
     return (
       <Modal show={modal.isOpen} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Добавить канал</Modal.Title>
+          <Modal.Title>{t('modals.addChannel')}</Modal.Title>
         </Modal.Header>
         <Formik
           initialValues={{ name: '' }}
           validationSchema={validationSchema}
           onSubmit={handleAdd}
         >
-          {({ errors, touched, isSubmitting, values, handleChange, handleBlur }) => (
+          {({ errors, touched, isSubmitting }) => (
             <FormikForm>
               <Modal.Body>
                 <Form.Group>
-                  <Form.Label>Имя канала</Form.Label>
+                  <Form.Label>{t('modals.channelName')}</Form.Label>
                   <Field
                     name="name"
                     innerRef={inputRef}
                     className={`form-control ${errors.name && touched.name ? 'is-invalid' : ''}`}
-                    placeholder="например: general"
+                    placeholder={t('modals.channelNamePlaceholder')}
                   />
                   {errors.name && touched.name && (
                     <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
@@ -87,9 +88,9 @@ function ChannelModals() {
                 </Form.Group>
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>Отмена</Button>
+                <Button variant="secondary" onClick={handleClose}>{t('modals.cancel')}</Button>
                 <Button type="submit" variant="primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Добавление...' : 'Добавить'}
+                  {isSubmitting ? t('errors.loading') : t('modals.add')}
                 </Button>
               </Modal.Footer>
             </FormikForm>
@@ -101,22 +102,22 @@ function ChannelModals() {
 
   // Модалка переименования
   if (modal.type === 'rename') {
-    const validationSchema = getValidationSchema(channels, currentChannel?.name);
+    const validationSchema = getValidationSchema(channels, t, currentChannel?.name);
     return (
       <Modal show={modal.isOpen} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Переименовать канал</Modal.Title>
+          <Modal.Title>{t('modals.renameChannel')}</Modal.Title>
         </Modal.Header>
         <Formik
           initialValues={{ name: currentChannel?.name || '' }}
           validationSchema={validationSchema}
           onSubmit={handleRename}
         >
-          {({ errors, touched, isSubmitting, values, handleChange, handleBlur }) => (
+          {({ errors, touched, isSubmitting }) => (
             <FormikForm>
               <Modal.Body>
                 <Form.Group>
-                  <Form.Label>Новое имя</Form.Label>
+                  <Form.Label>{t('modals.channelName')}</Form.Label>
                   <Field
                     name="name"
                     innerRef={inputRef}
@@ -128,9 +129,9 @@ function ChannelModals() {
                 </Form.Group>
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>Отмена</Button>
+                <Button variant="secondary" onClick={handleClose}>{t('modals.cancel')}</Button>
                 <Button type="submit" variant="primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Сохранение...' : 'Сохранить'}
+                  {isSubmitting ? t('errors.loading') : t('modals.rename')}
                 </Button>
               </Modal.Footer>
             </FormikForm>
@@ -145,16 +146,18 @@ function ChannelModals() {
     return (
       <Modal show={modal.isOpen} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Удалить канал</Modal.Title>
+          <Modal.Title>{t('modals.deleteChannel')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Вы уверены, что хотите удалить канал <strong>#{currentChannel?.name}</strong>?</p>
-          <p className="text-muted small">Все сообщения канала будут безвозвратно удалены.</p>
+          <p>
+            {t('modals.deleteConfirm')} <strong>#{currentChannel?.name}</strong>?
+          </p>
+          <p className="text-muted small">{t('modals.deleteWarning')}</p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>Отмена</Button>
+          <Button variant="secondary" onClick={handleClose}>{t('modals.cancel')}</Button>
           <Button variant="danger" onClick={handleDelete}>
-            Удалить
+            {t('modals.delete')}
           </Button>
         </Modal.Footer>
       </Modal>

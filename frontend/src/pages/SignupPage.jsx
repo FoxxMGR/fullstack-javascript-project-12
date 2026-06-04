@@ -1,27 +1,30 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { authAPI } from '../services/api';
 
-const validationSchema = Yup.object({
-  username: Yup.string()
-    .min(3, 'От 3 до 20 символов')
-    .max(20, 'От 3 до 20 символов')
-    .required('Обязательное поле'),
-  password: Yup.string()
-    .min(6, 'Не менее 6 символов')
-    .required('Обязательное поле'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'Пароли должны совпадать')
-    .required('Обязательное поле'),
-});
-
 function SignupPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Создаём схему валидации с переводами
+  const getValidationSchema = () => Yup.object({
+    username: Yup.string()
+      .min(3, t('yup.usernameMin'))
+      .max(20, t('yup.usernameMax'))
+      .required(t('yup.required')),
+    password: Yup.string()
+      .min(6, t('yup.passwordMin'))
+      .required(t('yup.required')),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('yup.passwordConfirm'))
+      .required(t('yup.required')),
+  });
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setLoading(true);
@@ -29,16 +32,15 @@ function SignupPage() {
     
     try {
       await authAPI.signup(values.username, values.password);
-      // После успешной регистрации можно сразу авторизовать пользователя
       const loginResponse = await authAPI.login(values.username, values.password);
       const { token } = loginResponse.data;
       localStorage.setItem('token', token);
       navigate('/');
     } catch (err) {
       if (err.response?.status === 409) {
-        setError('Пользователь с таким именем уже существует');
+        setError(t('errors.userExists'));
       } else {
-        setError(err.response?.data?.message || 'Ошибка регистрации');
+        setError(err.response?.data?.message || t('errors.signupFailed'));
       }
     } finally {
       setLoading(false);
@@ -50,7 +52,7 @@ function SignupPage() {
     <Container className="mt-5">
       <Row className="justify-content-md-center">
         <Col md={6}>
-          <h2 className="text-center mb-4">Регистрация</h2>
+          <h2 className="text-center mb-4">{t('signup.title')}</h2>
           
           {error && (
             <Alert variant="danger" className="mb-3">
@@ -60,49 +62,49 @@ function SignupPage() {
           
           <Formik
             initialValues={{ username: '', password: '', confirmPassword: '' }}
-            validationSchema={validationSchema}
+            validationSchema={getValidationSchema}
             onSubmit={handleSubmit}
           >
             {({ isSubmitting }) => (
               <Form>
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label">
-                    Имя пользователя
+                    {t('signup.username')}
                   </label>
                   <Field
                     type="text"
                     id="username"
                     name="username"
                     className="form-control"
-                    placeholder="от 3 до 20 символов"
+                    placeholder={t('signup.usernamePlaceholder')}
                   />
                   <ErrorMessage name="username" component="div" className="text-danger" />
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
-                    Пароль
+                    {t('signup.password')}
                   </label>
                   <Field
                     type="password"
                     id="password"
                     name="password"
                     className="form-control"
-                    placeholder="не менее 6 символов"
+                    placeholder={t('signup.passwordPlaceholder')}
                   />
                   <ErrorMessage name="password" component="div" className="text-danger" />
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="confirmPassword" className="form-label">
-                    Подтвердите пароль
+                    {t('signup.confirmPassword')}
                   </label>
                   <Field
                     type="password"
                     id="confirmPassword"
                     name="confirmPassword"
                     className="form-control"
-                    placeholder="введите пароль ещё раз"
+                    placeholder={t('signup.confirmPasswordPlaceholder')}
                   />
                   <ErrorMessage name="confirmPassword" component="div" className="text-danger" />
                 </div>
@@ -113,11 +115,11 @@ function SignupPage() {
                   className="w-100 mb-3"
                   disabled={isSubmitting || loading}
                 >
-                  {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+                  {loading ? '...' : t('signup.submit')}
                 </Button>
                 
                 <div className="text-center">
-                  <Link to="/login">Уже есть аккаунт? Войдите</Link>
+                  <Link to="/login">{t('signup.loginLink')}</Link>
                 </div>
               </Form>
             )}

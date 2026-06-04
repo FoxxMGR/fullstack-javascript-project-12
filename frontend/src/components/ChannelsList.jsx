@@ -2,8 +2,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ListGroup, Button } from 'react-bootstrap';
 import { setCurrentChannel, openModal } from '../store/chatSlice';
 import ChannelMenu from './ChannelMenu';
+import { useTranslation } from 'react-i18next';
 
 function ChannelsList() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { channels, currentChannelId } = useSelector((state) => state.chat);
 
@@ -14,9 +16,9 @@ function ChannelsList() {
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5>Каналы</h5>
+        <h5>{t('chat.channels')}</h5>
         <Button variant="outline-primary" size="sm" onClick={() => handleOpenModal('add')}>
-          + Добавить
+           + {t('chat.addChannel')}
         </Button>
       </div>
       <ListGroup>

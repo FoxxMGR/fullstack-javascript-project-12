@@ -1,0 +1,81 @@
+{
+  "translation": {
+    "header": {
+      "brand": "Hexlet Chat",
+      "logout": "Выйти",
+      "login": "Войти"
+    },
+    "login": {
+      "title": "Вход в чат",
+      "username": "Имя пользователя",
+      "password": "Пароль",
+      "submit": "Войти",
+      "signupLink": "Нет аккаунта? Зарегистрируйтесь",
+      "testData": "Тестовые данные: admin / admin"
+    },
+    "signup": {
+      "title": "Регистрация",
+      "username": "Имя пользователя",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "submit": "Зарегистрироваться",
+      "loginLink": "Уже есть аккаунт? Войдите",
+      "usernamePlaceholder": "от 3 до 20 символов",
+      "passwordPlaceholder": "не менее 6 символов",
+      "confirmPasswordPlaceholder": "введите пароль ещё раз"
+    },
+    "chat": {
+      "channels": "Каналы",
+      "addChannel": "Добавить канал",
+      "selectChannel": "Выберите канал",
+      "messages": "Сообщения",
+      "noMessages": "Нет сообщений. Будьте первым!",
+      "messagePlaceholder": "Введите сообщение...",
+      "send": "Отправить",
+      "sending": "Отправка...",
+      "loading": "Загрузка..."
+    },
+    "modals": {
+      "addChannel": "Добавить канал",
+      "renameChannel": "Переименовать канал",
+      "deleteChannel": "Удалить канал",
+      "channelName": "Имя канала",
+      "channelNamePlaceholder": "например: general",
+      "cancel": "Отмена",
+      "add": "Добавить",
+      "rename": "Сохранить",
+      "delete": "Удалить",
+      "deleteConfirm": "Вы уверены, что хотите удалить канал",
+      "deleteWarning": "Все сообщения канала будут безвозвратно удалены."
+    },
+    "notFound": {
+      "title": "404 - Страница не найдена",
+      "backLink": "Вернуться в чат"
+    },
+    "errors": {
+      "required": "Обязательное поле",
+      "usernameMin": "От 3 до 20 символов",
+      "usernameMax": "От 3 до 20 символов",
+      "passwordMin": "Не менее 6 символов",
+      "passwordConfirm": "Пароли должны совпадать",
+      "unique": "Такое имя уже существует",
+      "authFailed": "Ошибка авторизации",
+      "invalidCredentials": "Неверное имя пользователя или пароль",
+      "signupFailed": "Ошибка регистрации",
+      "userExists": "Пользователь с таким именем уже существует",
+      "loadError": "Ошибка загрузки данных",
+      "sendError": "Ошибка отправки сообщения",
+      "channelExists": "Такое имя уже существует",
+      "networkError": "Ошибка сети. Попробуйте позже",
+      "retry": "Повторить",
+      "loading": "Загрузка..."
+    },
+    "yup": {
+      "required": "Обязательное поле",
+      "usernameMin": "От 3 до 20 символов",
+      "usernameMax": "От 3 до 20 символов",
+      "passwordMin": "Не менее 6 символов",
+      "passwordConfirm": "Пароли должны совпадать"
+    }
+  }
+}

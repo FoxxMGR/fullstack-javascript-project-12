@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'
 import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { fetchChatData, setCurrentChannel, addMessage, openModal } from '../store/chatSlice';
+import { fetchChatData, addMessage, openModal } from '../store/chatSlice';
 import { initSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
@@ -11,10 +12,11 @@ import MessageForm from '../components/MessageForm';
 import ChannelModals from '../components/ChannelModals';
 
 function ChatPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token, logout } = useAuth();
-  const { loading, error, currentChannelId } = useSelector((state) => state.chat);
+  const { loading, error} = useSelector((state) => state.chat);
 
   // Слушаем события из меню
   useEffect(() => {
@@ -47,7 +49,7 @@ function ChatPage() {
     return (
       <Container className="mt-5 text-center">
         <Spinner animation="border" variant="primary" />
-        <p>Загрузка...</p>
+        <p>{t('chat.loading')}</p>
       </Container>
     );
   }
@@ -56,9 +58,9 @@ function ChatPage() {
     return (
       <Container className="mt-5">
         <Alert variant="danger">
-          <Alert.Heading>Ошибка</Alert.Heading>
+          <Alert.Heading>{t('errors.loadError')}</Alert.Heading>
           <p>{error}</p>
-          <Button onClick={() => dispatch(fetchChatData())}>Повторить</Button>
+          <Button onClick={() => dispatch(fetchChatData())}>{t('modals.rename')}</Button>
         </Alert>
       </Container>
     );
@@ -69,9 +71,9 @@ function ChatPage() {
       <Row className="h-100">
         <Col md={3} className="bg-light p-3" style={{ height: '100vh', overflowY: 'auto' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5>Каналы</h5>
+            <h5>{t('chat.channels')}</h5>
             <Button variant="outline-danger" size="sm" onClick={logout}>
-              Выйти
+              {t('header.logout')}
             </Button>
           </div>
           <ChannelsList />
