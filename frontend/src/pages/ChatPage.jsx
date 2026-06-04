@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
 import { fetchChatData, addMessage, openModal } from '../store/chatSlice';
@@ -16,9 +17,8 @@ function ChatPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token, logout } = useAuth();
-  const { loading, error} = useSelector((state) => state.chat);
+  const { loading, error } = useSelector((state) => state.chat);
 
-  // Слушаем события из меню
   useEffect(() => {
     const handleOpenModal = (e) => {
       dispatch(openModal(e.detail));
@@ -34,16 +34,35 @@ function ChatPage() {
     }
     
     dispatch(fetchChatData()).then((result) => {
-      if (result.meta.requestStatus === 'fulfilled') {
-        const socket = initSocket(token);
-        socket.on('newMessage', (message) => {
-          dispatch(addMessage(message));
-        });
+      if (result.meta.requestStatus === 'rejected') {
+        toast.error(t('toasts.loadError'));
+      } else if (result.meta.requestStatus === 'fulfilled') {
+        try {
+          const socket = initSocket(token);
+          
+          socket.on('connect', () => {
+            console.log('WebSocket connected');
+          });
+          
+          socket.on('newMessage', (message) => {
+            dispatch(addMessage(message));
+          });
+          
+          socket.on('connect_error', (error) => {
+            console.error('WebSocket connection error:', error);
+            toast.error(t('toasts.websocketError'));
+          });
+        } catch (err) {
+          console.error('Failed to initialize socket:', err);
+          toast.error(t('toasts.websocketError'));
+        }
       }
     });
     
-    return () => closeSocket();
-  }, [token, dispatch, navigate]);
+    return () => {
+      closeSocket();
+    };
+  }, [token, dispatch, navigate, t]);
 
   if (loading) {
     return (
@@ -60,7 +79,7 @@ function ChatPage() {
         <Alert variant="danger">
           <Alert.Heading>{t('errors.loadError')}</Alert.Heading>
           <p>{error}</p>
-          <Button onClick={() => dispatch(fetchChatData())}>{t('modals.rename')}</Button>
+          <Button onClick={() => dispatch(fetchChatData())}>{t('errors.retry')}</Button>
         </Alert>
       </Container>
     );

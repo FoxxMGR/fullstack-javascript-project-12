@@ -12,9 +12,11 @@ function ChannelMenu({ channelId, channelName, isDefault }) {
       </Dropdown.Toggle>
       <Dropdown.Menu>
         <Dropdown.Item onClick={() => window.dispatchEvent(new CustomEvent('openModal', { detail: { type: 'rename', channelId } }))}>
-✏️ {t('modals.renameChannel')}        </Dropdown.Item>
+        ✏️ {t('modals.renameChannel')}        
+        </Dropdown.Item>
         <Dropdown.Item onClick={() => window.dispatchEvent(new CustomEvent('openModal', { detail: { type: 'remove', channelId } }))}>
-🗑️ {t('modals.deleteChannel')}        </Dropdown.Item>
+        🗑️ {t('modals.deleteChannel')}        
+        </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

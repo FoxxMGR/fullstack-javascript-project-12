@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
@@ -12,7 +13,6 @@ function SignupPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Создаём схему валидации с переводами
   const getValidationSchema = () => Yup.object({
     username: Yup.string()
       .min(3, t('yup.usernameMin'))
@@ -35,18 +35,26 @@ function SignupPage() {
       const loginResponse = await authAPI.login(values.username, values.password);
       const { token } = loginResponse.data;
       localStorage.setItem('token', token);
+      toast.success('Регистрация прошла успешно!');
       navigate('/');
     } catch (err) {
+      let errorMessage = t('errors.signupFailed');
       if (err.response?.status === 409) {
-        setError(t('errors.userExists'));
-      } else {
-        setError(err.response?.data?.message || t('errors.signupFailed'));
+        errorMessage = t('errors.userExists');
+      } else if (!err.response) {
+        errorMessage = t('errors.networkError');
+        toast.error(errorMessage);
+      }
+      setError(errorMessage);
+      if (err.response) {
+        toast.error(errorMessage);
       }
     } finally {
       setLoading(false);
       setSubmitting(false);
     }
   };
+
 
   return (
     <Container className="mt-5">
