@@ -20,8 +20,8 @@
       "confirmPassword": "Подтвердите пароль",
       "submit": "Зарегистрироваться",
       "loginLink": "Уже есть аккаунт? Войдите",
-      "usernamePlaceholder": "от 3 до 20 символов",
-      "passwordPlaceholder": "не менее 6 символов",
+      "usernamePlaceholder": "От 3 до 20 символов",
+      "passwordPlaceholder": "Не менее 6 символов",
       "confirmPasswordPlaceholder": "введите пароль ещё раз"
     },
     "chat": {
