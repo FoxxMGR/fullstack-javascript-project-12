@@ -10,7 +10,7 @@
       "username": "Ваш ник",
       "password": "Пароль",
       "submit": "Войти",
-      "signupLink": "Зарегистрироваться",
+      "signupLink": "Нет аккаунта? Регистрация",
       "testData": "Тестовые данные: admin / admin"
     },
     "signup": {
