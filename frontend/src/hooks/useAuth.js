@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { authAPI } from '../services/api';
+import { useRollbar } from '@rollbar/react';
+
 
 export const useAuth = () => {
+  const rollbar = useRollbar();
   const { t } = useTranslation();
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [error, setError] = useState(null);
@@ -24,6 +27,10 @@ export const useAuth = () => {
       toast.success(t('toasts.welcome'));
       navigate('/');
     } catch (err) {
+      rollbar.error('Ошибка авторизации', { 
+        error: err.message,
+        status: err.response?.status 
+      });
       let errorMessage = t('toasts.loginError');
       if (err.response?.status === 401) {
         errorMessage = t('errors.invalidCredentials');

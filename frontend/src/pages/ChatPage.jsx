@@ -11,8 +11,10 @@ import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
 import MessageForm from '../components/MessageForm';
 import ChannelModals from '../components/ChannelModals';
+import { useRollbar } from '@rollbar/react';
 
 function ChatPage() {
+  const rollbar = useRollbar();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ function ChatPage() {
     
     dispatch(fetchChatData()).then((result) => {
       if (result.meta.requestStatus === 'rejected') {
+        rollbar.error('Ошибка загрузки данных чата', { error: result.payload });
         toast.error(t('toasts.loadError'));
       } else if (result.meta.requestStatus === 'fulfilled') {
         try {
@@ -62,7 +65,7 @@ function ChatPage() {
     return () => {
       closeSocket();
     };
-  }, [token, dispatch, navigate, t]);
+  }, [token, dispatch, navigate, rollbar, t]);
 
   if (loading) {
     return (

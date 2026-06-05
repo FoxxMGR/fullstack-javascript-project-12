@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import Rollbar from 'rollbar';
+import i18n from '../i18n';
+
+const rollbar = new Rollbar({
+  accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
+  environment: import.meta.env.VITE_ROLLBAR_ENVIRONMENT || 'development',
+});
 
 const api = axios.create();
 
@@ -12,6 +19,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Вспомогательная функция для получения перевода
+const t = i18n.t;
+
 // Загрузка данных
 export const fetchChatData = createAsyncThunk(
   'chat/fetchChatData',
@@ -20,10 +30,14 @@ export const fetchChatData = createAsyncThunk(
       const response = await api.get('/api/v1/channels');
       return response.data;
     } catch (error) {
+      rollbar.error(t('errors.rollbarLoadError'), { 
+        error: error.message, 
+        url: '/api/v1/channels' 
+      });
       if (!error.response) {
-        toast.error('Ошибка сети. Проверьте подключение');
+        toast.error(t('toasts.networkError'));
       }
-      return rejectWithValue(error.response?.data?.message || 'Ошибка загрузки');
+      return rejectWithValue(error.response?.data?.message || t('errors.loadError'));
     }
   }
 );
@@ -36,12 +50,17 @@ export const sendMessage = createAsyncThunk(
       const response = await api.post('/api/v1/messages', { channelId, body });
       return response.data;
     } catch (error) {
+      rollbar.error(t('errors.rollbarSendError'), { 
+        error: error.message, 
+        channelId,
+        body: body.substring(0, 50) // только начало сообщения для безопасности
+      });
       if (!error.response) {
-        toast.error('Ошибка сети. Проверьте подключение');
+        toast.error(t('toasts.networkError'));
       } else {
-        toast.error('Ошибка отправки сообщения');
+        toast.error(t('toasts.sendError'));
       }
-      return rejectWithValue(error.response?.data?.message || 'Ошибка отправки сообщения');
+      return rejectWithValue(error.response?.data?.message || t('errors.sendError'));
     }
   }
 );
@@ -52,17 +71,21 @@ export const addChannel = createAsyncThunk(
   async (name, { rejectWithValue }) => {
     try {
       const response = await api.post('/api/v1/channels', { name });
-      toast.success('Канал создан');
+      toast.success(t('toasts.channelCreated'));
       return response.data;
     } catch (error) {
+      rollbar.error(t('errors.rollbarAddChannelError'), { 
+        error: error.message, 
+        name 
+      });
       if (!error.response) {
-        toast.error('Ошибка сети. Проверьте подключение');
+        toast.error(t('toasts.networkError'));
       } else if (error.response?.status === 409) {
-        toast.error('Канал с таким именем уже существует');
+        toast.error(t('errors.channelExists'));
       } else {
-        toast.error('Ошибка создания канала');
+        toast.error(t('errors.channelExists'));
       }
-      return rejectWithValue(error.response?.data?.message || 'Ошибка создания канала');
+      return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
 );
@@ -73,17 +96,22 @@ export const renameChannel = createAsyncThunk(
   async ({ id, name }, { rejectWithValue }) => {
     try {
       const response = await api.patch(`/api/v1/channels/${id}`, { name });
-      toast.success('Канал переименован');
+      toast.success(t('toasts.channelRenamed'));
       return response.data;
     } catch (error) {
+      rollbar.error(t('errors.rollbarRenameChannelError'), { 
+        error: error.message, 
+        id, 
+        name 
+      });
       if (!error.response) {
-        toast.error('Ошибка сети. Проверьте подключение');
+        toast.error(t('toasts.networkError'));
       } else if (error.response?.status === 409) {
-        toast.error('Канал с таким именем уже существует');
+        toast.error(t('errors.channelExists'));
       } else {
-        toast.error('Ошибка переименования канала');
+        toast.error(t('errors.channelExists'));
       }
-      return rejectWithValue(error.response?.data?.message || 'Ошибка переименования');
+      return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
 );
@@ -94,20 +122,22 @@ export const deleteChannel = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await api.delete(`/api/v1/channels/${id}`);
-      toast.success('Канал удалён');
+      toast.success(t('toasts.channelDeleted'));
       return id;
     } catch (error) {
+      rollbar.error(t('errors.rollbarDeleteChannelError'), { 
+        error: error.message, 
+        id 
+      });
       if (!error.response) {
-        toast.error('Ошибка сети. Проверьте подключение');
+        toast.error(t('toasts.networkError'));
       } else {
-        toast.error('Ошибка удаления канала');
+        toast.error(t('errors.channelExists'));
       }
-      return rejectWithValue(error.response?.data?.message || 'Ошибка удаления канала');
+      return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
 );
-
-
 
 const initialState = {
   channels: [],
@@ -171,9 +201,8 @@ const chatSlice = createSlice({
       .addCase(sendMessage.pending, (state) => {
         state.sendingMessage = true;
       })
-      .addCase(sendMessage.fulfilled, (state, action) => {
+      .addCase(sendMessage.fulfilled, (state) => {
         state.sendingMessage = false;
-        // Сообщение уже добавлено через WebSocket
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.sendingMessage = false;
