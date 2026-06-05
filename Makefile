@@ -1,7 +1,11 @@
-.PHONY: build start
+.PHONY: install build start
 
-build:
-	cd frontend && npm ci && npm run build
+install:
+	cd frontend && npm ci
+	npm ci
+
+build: install
+	cd frontend && npm run build
 	mkdir -p build
 	cp -r frontend/dist/* build/
 
