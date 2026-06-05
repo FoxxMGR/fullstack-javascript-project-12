@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { filterProfanity } from '../services/profanityFilter';
 
 function MessagesList() {
   const { t } = useTranslation();
@@ -16,7 +17,8 @@ function MessagesList() {
         ) : (
           currentMessages.map((msg) => (
             <div key={msg.id} className="mb-2">
-              <strong>{msg.username}:</strong> {msg.body}
+              <strong>{msg.username}:</strong>{' '}
+              {filterProfanity(msg.body)}  {/* ← фильтруем сообщения при отображении */}
               <small className="text-muted ms-2">
                 {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : ''}
               </small>

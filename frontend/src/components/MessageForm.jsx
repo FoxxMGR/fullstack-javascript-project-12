@@ -4,6 +4,8 @@ import { Form, Button } from 'react-bootstrap';
 import { sendMessage } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
+import { filterProfanity, containsProfanity } from '../services/profanityFilter';
 
 function MessageForm() {
   const { t } = useTranslation();
@@ -15,7 +17,21 @@ function MessageForm() {
     e.preventDefault();
     if (!message.trim() || sendingMessage) return;
     
-    await dispatch(sendMessage({ channelId: currentChannelId, body: message.trim() })).unwrap();
+    // Фильтруем нецензурные слова
+    const filteredMessage = filterProfanity(message.trim());
+    
+    // Проверяем, содержит ли сообщение нецензурные слова
+    if (containsProfanity(message.trim())) {
+      toast.warning(t('errors.profanity'));
+      // Можно либо отправить отфильтрованное сообщение, либо заблокировать отправку
+      // Вариант 1: отправляем отфильтрованное сообщение
+      await dispatch(sendMessage({ channelId: currentChannelId, body: filteredMessage })).unwrap();
+      // Вариант 2: блокируем отправку и показываем предупреждение (раскомментируйте строку ниже)
+      // return;
+    } else {
+      await dispatch(sendMessage({ channelId: currentChannelId, body: message.trim() })).unwrap();
+    }
+    
     setMessage('');
   };
 

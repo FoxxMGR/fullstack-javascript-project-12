@@ -5,6 +5,7 @@ import { Formik, Form as FormikForm, Field } from 'formik';
 import * as Yup from 'yup';
 import { addChannel, renameChannel, deleteChannel, closeModal } from '../store/chatSlice';
 import { useTranslation } from 'react-i18next';
+import { containsProfanity } from '../services/profanityFilter';
 
 const getValidationSchema = (channels, t, currentName = '') => {
   return Yup.object({
@@ -17,6 +18,10 @@ const getValidationSchema = (channels, t, currentName = '') => {
         const trimmed = value.trim();
         const isSameAsCurrent = trimmed === currentName;
         return isSameAsCurrent || !channels.some(ch => ch.name === trimmed);
+      })
+      .test('profanity', t('errors.profanity'), (value) => {
+        if (!value) return true;
+        return !containsProfanity(value.trim());
       })
       .required(t('errors.required')),
   });
