@@ -10,7 +10,7 @@
       "username": "Ваш ник",
       "password": "Пароль",
       "submit": "Войти",
-      "signupLink": "Нет аккаунта? Зарегистрируйтесь",
+      "signupLink": "Зарегистрироваться",
       "testData": "Тестовые данные: admin / admin"
     },
     "signup": {
@@ -22,7 +22,7 @@
       "loginLink": "Уже есть аккаунт? Войдите",
       "usernamePlaceholder": "От 3 до 20 символов",
       "passwordPlaceholder": "Не менее 6 символов",
-      "confirmPasswordPlaceholder": "введите пароль ещё раз"
+      "confirmPasswordPlaceholder": "Введите пароль ещё раз"
     },
     "chat": {
       "channels": "Каналы",
@@ -70,9 +70,9 @@
       "retry": "Повторить",
       "loading": "Загрузка...",
       "profanity": "Сообщение содержит недопустимые слова",
-        "somethingWentWrong": "Что-то пошло не так",
-  "workingOnIt": "Мы уже работаем над исправлением",
-  "reloadPage": "Перезагрузить страницу"
+      "somethingWentWrong": "Что-то пошло не так",
+      "workingOnIt": "Мы уже работаем над исправлением",
+      "reloadPage": "Перезагрузить страницу"
     },
     "yup": {
       "required": "Обязательное поле",
