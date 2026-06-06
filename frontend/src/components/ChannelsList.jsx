@@ -27,14 +27,13 @@ function ChannelsList() {
           <ListGroup.Item
             key={channel.id}
             as="div"
-            active={channel.id === currentChannelId}
-            className="d-flex justify-content-between align-items-center p-0"
+            className="d-flex justify-content-between align-items-center p-1"
           >
             <button
               type="button"
               aria-label={channel.name}
-              className={`btn flex-grow-1 text-start border-0 rounded-0 ${
-                channel.id === currentChannelId ? 'text-white' : 'text-body'
+              className={`btn flex-grow-1 text-start ${
+                channel.id === currentChannelId ? 'btn-primary' : 'btn-light'
               }`}
               onClick={() => dispatch(setCurrentChannel(channel.id))}
             >
