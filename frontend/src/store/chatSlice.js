@@ -27,12 +27,12 @@ export const fetchChatData = createAsyncThunk(
   'chat/fetchChatData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/v1/channels');
+      const response = await api.get('/api/v1/data');
       return response.data;
     } catch (error) {
       rollbar.error(t('errors.rollbarLoadError'), { 
         error: error.message, 
-        url: '/api/v1/channels' 
+        url: '/api/v1/data'
       });
       if (!error.response) {
         toast.error(t('toasts.networkError'));
@@ -115,6 +115,9 @@ export const renameChannel = createAsyncThunk(
     }
   }
 );
+
+
+
 
 // Удаление канала
 export const deleteChannel = createAsyncThunk(

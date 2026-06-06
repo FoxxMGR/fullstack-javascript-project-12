@@ -26,13 +26,20 @@ function ChannelsList() {
         {channels.map((channel) => (
           <ListGroup.Item
             key={channel.id}
-            as="button"
-            action
+            as="div"
             active={channel.id === currentChannelId}
-            onClick={() => dispatch(setCurrentChannel(channel.id))}
-            className="d-flex justify-content-between align-items-center"
+            className="d-flex justify-content-between align-items-center p-0"
           >
-            <span aria-label={channel.name}># {filterProfanity(channel.name)}</span>
+            <button
+              type="button"
+              aria-label={channel.name}
+              className={`btn flex-grow-1 text-start border-0 rounded-0 ${
+                channel.id === currentChannelId ? 'text-white' : 'text-body'
+              }`}
+              onClick={() => dispatch(setCurrentChannel(channel.id))}
+            >
+              <span aria-hidden="true">#</span> {filterProfanity(channel.name)}
+            </button>
             <ChannelMenu 
               channelId={channel.id} 
               channelName={channel.name}
