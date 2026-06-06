@@ -191,7 +191,8 @@ const chatSlice = createSlice({
         state.loading = false;
         state.channels = action.payload.channels || [];
         state.messages = action.payload.messages || [];
-        if (state.channels.length > 0 && !state.currentChannelId) {
+        const hasCurrentChannel = state.channels.some(ch => ch.id === state.currentChannelId);
+        if (state.channels.length > 0 && !hasCurrentChannel) {
           const defaultChannel = state.channels.find(ch => ch.name === 'general');
           state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
         }
