@@ -26,13 +26,13 @@ function ChannelsList() {
         {channels.map((channel) => (
           <ListGroup.Item
             key={channel.id}
-            as="div"
+            as="button"
             action
             active={channel.id === currentChannelId}
             onClick={() => dispatch(setCurrentChannel(channel.id))}
             className="d-flex justify-content-between align-items-center"
           >
-            <span># {filterProfanity(channel.name)}</span>  {/* ← фильтруем название канала */}
+            <span aria-label={channel.name}># {filterProfanity(channel.name)}</span>
             <ChannelMenu 
               channelId={channel.id} 
               channelName={channel.name}
