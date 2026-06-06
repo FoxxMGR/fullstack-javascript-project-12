@@ -55,6 +55,10 @@ function ChatPage() {
             console.error('WebSocket connection error:', error);
             toast.error(t('toasts.websocketError'));
           });
+
+          socket.on('disconnect', () => {
+            toast.error(t('toasts.websocketError'));
+          });
         } catch (err) {
           console.error('Failed to initialize socket:', err);
           toast.error(t('toasts.websocketError'));

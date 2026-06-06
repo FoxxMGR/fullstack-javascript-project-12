@@ -17,22 +17,22 @@ function MessageForm() {
     e.preventDefault();
     if (!message.trim() || sendingMessage) return;
     
-    // Фильтруем нецензурные слова
-    const filteredMessage = filterProfanity(message.trim());
-    
-    // Проверяем, содержит ли сообщение нецензурные слова
-    if (containsProfanity(message.trim())) {
+    const body = message.trim();
+    const filteredMessage = filterProfanity(body);
+
+    if (containsProfanity(body)) {
       toast.warning(t('errors.profanity'));
-      // Можно либо отправить отфильтрованное сообщение, либо заблокировать отправку
-      // Вариант 1: отправляем отфильтрованное сообщение
-      await dispatch(sendMessage({ channelId: currentChannelId, body: filteredMessage })).unwrap();
-      // Вариант 2: блокируем отправку и показываем предупреждение (раскомментируйте строку ниже)
-      // return;
-    } else {
-      await dispatch(sendMessage({ channelId: currentChannelId, body: message.trim() })).unwrap();
     }
-    
-    setMessage('');
+
+    try {
+      await dispatch(sendMessage({
+        channelId: currentChannelId,
+        body: containsProfanity(body) ? filteredMessage : body,
+      })).unwrap();
+      setMessage('');
+    } catch {
+      // Сообщение об ошибке уже показывает sendMessage thunk.
+    }
   };
 
   if (!currentChannelId) return null;
