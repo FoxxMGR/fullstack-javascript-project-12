@@ -3,7 +3,6 @@ import { Button, Stack } from 'react-bootstrap';
 import { setCurrentChannel, openModal } from '../store/chatSlice';
 import ChannelMenu from './ChannelMenu';
 import { useTranslation } from 'react-i18next';
-import { filterProfanity } from '../services/profanityFilter';  
 
 function ChannelsList() {
   const { t } = useTranslation();
@@ -22,9 +21,9 @@ function ChannelsList() {
             variant={channel.id === currentChannelId ? 'primary' : 'outline-secondary'}
             className="flex-grow-1 text-start"
             onClick={() => dispatch(setCurrentChannel(channel.id))}
-            aria-label={filterProfanity(channel.name)} 
+            aria-label={channel.name}
           >
-            # {filterProfanity(channel.name)}
+             {channel.name}
           </Button>
           <ChannelMenu 
             channelId={channel.id} 
