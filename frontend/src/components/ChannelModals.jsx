@@ -80,8 +80,9 @@ function ChannelModals() {
             <FormikForm>
               <Modal.Body>
                 <Form.Group>
-                  <Form.Label>{t('modals.channelName')}</Form.Label>
+                  <Form.Label htmlFor="channel-name">{t('modals.channelName')}</Form.Label>
                   <Field
+                    id="channel-name"
                     name="name"
                     innerRef={inputRef}
                     className={`form-control ${errors.name && touched.name ? 'is-invalid' : ''}`}
@@ -122,8 +123,9 @@ function ChannelModals() {
             <FormikForm>
               <Modal.Body>
                 <Form.Group>
-                  <Form.Label>{t('modals.channelName')}</Form.Label>
+                  <Form.Label htmlFor="rename-channel">{t('modals.channelName')}</Form.Label>
                   <Field
+                    id="rename-channel"
                     name="name"
                     innerRef={inputRef}
                     className={`form-control ${errors.name && touched.name ? 'is-invalid' : ''}`}
