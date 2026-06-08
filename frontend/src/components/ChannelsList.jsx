@@ -13,7 +13,6 @@ function ChannelsList() {
     dispatch(openModal({ type, channelId }));
   };
 
-
   return (
     <Stack gap={2}>
       {channels.map((channel) => (
