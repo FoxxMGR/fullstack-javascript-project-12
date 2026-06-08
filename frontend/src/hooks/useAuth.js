@@ -38,12 +38,8 @@ export const useAuth = () => {
         errorMessage = err.response.data.message;
       } else if (!err.response) {
         errorMessage = t('toasts.networkError');
-        toast.error(errorMessage);
       }
       setError(errorMessage);
-      if (err.response) {
-        toast.error(errorMessage);
-      }
     } finally {
       setLoading(false);
     }
