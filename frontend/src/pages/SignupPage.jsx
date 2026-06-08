@@ -37,7 +37,10 @@ function SignupPage() {
       await authAPI.signup(values.username, values.password);
       const loginResponse = await authAPI.login(values.username, values.password);
       const { token } = loginResponse.data;
+      
+      // Сохраняем токен и имя пользователя
       localStorage.setItem('token', token);
+      localStorage.setItem('username', values.username);  // ← ДОБАВЛЕНО
       
       // Загружаем данные чата перед редиректом
       await dispatch(fetchChatData()).unwrap();
@@ -45,7 +48,7 @@ function SignupPage() {
       // Небольшая задержка для уверенности, что Redux обновился
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      toast.success('Регистрация прошла успешно!');
+      toast.success(t('toasts.signupSuccess'));
       navigate('/');
     } catch (err) {
       let errorMessage = t('errors.signupFailed');

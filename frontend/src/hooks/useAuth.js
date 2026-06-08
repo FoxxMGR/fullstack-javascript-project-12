@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { authAPI } from '../services/api';
 import { useRollbar } from '@rollbar/react';
 
-
 export const useAuth = () => {
   const rollbar = useRollbar();
   const { t } = useTranslation();
@@ -23,6 +22,7 @@ export const useAuth = () => {
       const { token: newToken } = response.data;
       
       localStorage.setItem('token', newToken);
+      localStorage.setItem('username', username);  // ← ДОБАВИТЬ: сохраняем имя пользователя
       setToken(newToken);
       toast.success(t('toasts.welcome'));
       navigate('/');
@@ -47,6 +47,7 @@ export const useAuth = () => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');  // ← ДОБАВИТЬ: удаляем имя пользователя
     setToken(null);
     toast.info(t('toasts.logout'));
     navigate('/login');
