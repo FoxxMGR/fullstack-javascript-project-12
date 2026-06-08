@@ -2,6 +2,7 @@ import leoProfanity from 'leo-profanity';
 
 // Загружаем русский словарь
 leoProfanity.loadDictionary('ru');
+leoProfanity.loadDictionary('en');
 
 // // Добавляем дополнительные слова (опционально)
 // const customWords = [
