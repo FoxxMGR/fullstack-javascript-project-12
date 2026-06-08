@@ -30,6 +30,7 @@
       "selectChannel": "Выберите канал",
       "messages": "Сообщения",
       "noMessages": "Нет сообщений. Будьте первым!",
+      "newMessage": "Новое сообщение",
       "messagePlaceholder": "Введите сообщение...",
       "send": "Отправить",
       "sending": "Отправка...",

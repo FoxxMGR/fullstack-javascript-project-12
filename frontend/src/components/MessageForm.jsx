@@ -42,6 +42,7 @@ function MessageForm() {
       <div className="d-flex gap-2">
         <Form.Control
           type="text"
+          aria-label={t('chat.newMessage')}
           placeholder={t('chat.messagePlaceholder')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
