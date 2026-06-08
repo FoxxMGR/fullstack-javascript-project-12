@@ -5,11 +5,14 @@ import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { useDispatch } from 'react-redux'; // Добавить
 import { authAPI } from '../services/api';
+import { fetchChatData } from '../store/chatSlice'; // Добавить импорт
 
 function SignupPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Добавить
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,10 +34,17 @@ function SignupPage() {
     setError(null);
     
     try {
+      // Регистрируем пользователя
       await authAPI.signup(values.username, values.password);
+      
+      // Входим
       const loginResponse = await authAPI.login(values.username, values.password);
       const { token } = loginResponse.data;
       localStorage.setItem('token', token);
+      
+      // ЗАГРУЖАЕМ ДАННЫЕ ЧАТА (каналы и сообщения)
+      await dispatch(fetchChatData()).unwrap();
+      
       toast.success('Регистрация прошла успешно!');
       navigate('/');
     } catch (err) {
@@ -54,7 +64,6 @@ function SignupPage() {
       setSubmitting(false);
     }
   };
-
 
   return (
     <Container className="mt-5">

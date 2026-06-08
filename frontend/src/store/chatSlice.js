@@ -27,7 +27,7 @@ export const fetchChatData = createAsyncThunk(
   'chat/fetchChatData',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/api/v1/data');
+      const response = await api.get('/api/v1/channels');
       return response.data;
     } catch (error) {
       rollbar.error(t('errors.rollbarLoadError'), { 
@@ -187,16 +187,16 @@ const chatSlice = createSlice({
       .addCase(fetchChatData.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchChatData.fulfilled, (state, action) => {
-        state.loading = false;
-        state.channels = action.payload.channels || [];
-        state.messages = action.payload.messages || [];
-        const hasCurrentChannel = state.channels.some(ch => ch.id === state.currentChannelId);
-        if (state.channels.length > 0 && !hasCurrentChannel) {
-          const defaultChannel = state.channels.find(ch => ch.name === 'general');
-          state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
-        }
-      })
+.addCase(fetchChatData.fulfilled, (state, action) => {
+  state.loading = false;
+  state.channels = action.payload.channels || [];
+  state.messages = action.payload.messages || []
+        
+  if (state.channels.length > 0 && !state.currentChannelId) {
+    const defaultChannel = state.channels.find(ch => ch.name === 'general');
+    state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
+  }
+})
       .addCase(fetchChatData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

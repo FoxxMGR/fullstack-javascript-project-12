@@ -1,9 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { ListGroup, Button } from 'react-bootstrap';
+import { Button, Stack } from 'react-bootstrap';
 import { setCurrentChannel, openModal } from '../store/chatSlice';
 import ChannelMenu from './ChannelMenu';
 import { useTranslation } from 'react-i18next';
-import { filterProfanity } from '../services/profanityFilter';
 
 function ChannelsList() {
   const { t } = useTranslation();
@@ -14,40 +13,35 @@ function ChannelsList() {
     dispatch(openModal({ type, channelId }));
   };
 
+
   return (
-    <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5>{t('chat.channels')}</h5>
-        <Button variant="outline-primary" size="sm" onClick={() => handleOpenModal('add')}>
-          + {t('chat.addChannel')}
-        </Button>
-      </div>
-      <ListGroup>
-        {channels.map((channel) => (
-          <ListGroup.Item
-            key={channel.id}
-            as="div"
-            className="d-flex justify-content-between align-items-center p-1"
+    <Stack gap={2}>
+      {channels.map((channel) => (
+        <div key={channel.id} className="d-flex align-items-center gap-1">
+          <Button
+            variant={channel.id === currentChannelId ? 'primary' : 'outline-secondary'}
+            className="flex-grow-1 text-start"
+            onClick={() => dispatch(setCurrentChannel(channel.id))}
+            aria-label={channel.name}
           >
-            <button
-              type="button"
-              aria-label={channel.name}
-              className={`btn flex-grow-1 text-start ${
-                channel.id === currentChannelId ? 'btn-primary' : 'btn-light'
-              }`}
-              onClick={() => dispatch(setCurrentChannel(channel.id))}
-            >
-              <span aria-hidden="true">#</span> {filterProfanity(channel.name)}
-            </button>
-            <ChannelMenu 
-              channelId={channel.id} 
-              channelName={channel.name}
-              isDefault={channel.name === 'general'}
-            />
-          </ListGroup.Item>
-        ))}
-      </ListGroup>
-    </>
+            # {channel.name}
+          </Button>
+          <ChannelMenu 
+            channelId={channel.id} 
+            channelName={channel.name}
+            isDefault={channel.name === 'general'}
+          />
+        </div>
+      ))}
+      <Button 
+        variant="outline-primary" 
+        size="sm" 
+        onClick={() => handleOpenModal('add')}
+        className="mt-2"
+      >
+        + {t('chat.addChannel')}
+      </Button>
+    </Stack>
   );
 }
 
