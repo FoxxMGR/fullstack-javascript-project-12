@@ -5,7 +5,8 @@ import { Formik, Form as FormikForm, Field } from 'formik';
 import * as Yup from 'yup';
 import { addChannel, renameChannel, deleteChannel, closeModal } from '../store/chatSlice';
 import { useTranslation } from 'react-i18next';
-import { containsProfanity } from '../services/profanityFilter';
+import { containsProfanity, filterProfanity } from '../services/profanityFilter';
+import { toast } from 'react-toastify';
 
 const getValidationSchema = (channels, t, currentName = '') => {
   return Yup.object({
@@ -18,10 +19,6 @@ const getValidationSchema = (channels, t, currentName = '') => {
         const trimmed = value.trim();
         const isSameAsCurrent = trimmed === currentName;
         return isSameAsCurrent || !channels.some(ch => ch.name === trimmed);
-      })
-      .test('profanity', t('errors.profanity'), (value) => {
-        if (!value) return true;
-        return !containsProfanity(value.trim());
       })
       .required(t('errors.required')),
   });
@@ -42,18 +39,35 @@ function ChannelModals() {
   const handleClose = () => dispatch(closeModal());
 
   const handleAdd = async (values, { setSubmitting }) => {
-    await dispatch(addChannel(values.name.trim())).unwrap();
+    let name = values.name.trim();
+    
+    // Фильтруем нецензурные слова
+    if (containsProfanity(name)) {
+      name = filterProfanity(name);
+      toast.warning(t('errors.profanity'));
+    }
+    
+    await dispatch(addChannel(name)).unwrap();
     setSubmitting(false);
   };
 
   const handleRename = async (values, { setSubmitting }) => {
+    let name = values.name.trim();
     const channel = channels.find(ch => ch.id === modal.channelId);
-    if (channel?.name === values.name.trim()) {
+    
+    if (channel?.name === name) {
       dispatch(closeModal());
       setSubmitting(false);
       return;
     }
-    await dispatch(renameChannel({ id: modal.channelId, name: values.name.trim() })).unwrap();
+    
+    // Фильтруем нецензурные слова
+    if (containsProfanity(name)) {
+      name = filterProfanity(name);
+      toast.warning(t('errors.profanity'));
+    }
+    
+    await dispatch(renameChannel({ id: modal.channelId, name })).unwrap();
     setSubmitting(false);
   };
 
