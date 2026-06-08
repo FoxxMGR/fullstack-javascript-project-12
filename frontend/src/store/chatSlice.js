@@ -19,10 +19,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Вспомогательная функция для получения перевода
 const t = i18n.t;
 
-// Загрузка данных
 export const fetchChatData = createAsyncThunk(
   'chat/fetchChatData',
   async (_, { rejectWithValue }) => {
@@ -30,19 +28,25 @@ export const fetchChatData = createAsyncThunk(
       const response = await api.get('/api/v1/channels');
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarLoadError'), { 
-        error: error.message, 
-        url: '/api/v1/data'
-      });
-      if (!error.response) {
-        toast.error(t('toasts.networkError'));
-      }
+      rollbar.error(t('errors.rollbarLoadError'), { error: error.message, url: '/api/v1/data' });
+      if (!error.response) toast.error(t('toasts.networkError'));
       return rejectWithValue(error.response?.data?.message || t('errors.loadError'));
     }
   }
 );
 
-// Отправка сообщения
+export const fetchMessages = createAsyncThunk(
+  'chat/fetchMessages',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/api/v1/messages');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
   async ({ channelId, body }, { rejectWithValue }) => {
@@ -50,22 +54,14 @@ export const sendMessage = createAsyncThunk(
       const response = await api.post('/api/v1/messages', { channelId, body });
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarSendError'), { 
-        error: error.message, 
-        channelId,
-        body: body.substring(0, 50) // только начало сообщения для безопасности
-      });
-      if (!error.response) {
-        toast.error(t('toasts.networkError'));
-      } else {
-        toast.error(t('toasts.sendError'));
-      }
+      rollbar.error(t('errors.rollbarSendError'), { error: error.message, channelId, body: body.substring(0, 50) });
+      if (!error.response) toast.error(t('toasts.networkError'));
+      else toast.error(t('toasts.sendError'));
       return rejectWithValue(error.response?.data?.message || t('errors.sendError'));
     }
   }
 );
 
-// Добавление канала
 export const addChannel = createAsyncThunk(
   'chat/addChannel',
   async (name, { rejectWithValue }) => {
@@ -74,23 +70,15 @@ export const addChannel = createAsyncThunk(
       toast.success(t('toasts.channelCreated'));
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarAddChannelError'), { 
-        error: error.message, 
-        name 
-      });
-      if (!error.response) {
-        toast.error(t('toasts.networkError'));
-      } else if (error.response?.status === 409) {
-        toast.error(t('errors.channelExists'));
-      } else {
-        toast.error(t('errors.channelExists'));
-      }
+      rollbar.error(t('errors.rollbarAddChannelError'), { error: error.message, name });
+      if (!error.response) toast.error(t('toasts.networkError'));
+      else if (error.response?.status === 409) toast.error(t('errors.channelExists'));
+      else toast.error(t('errors.channelExists'));
       return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
 );
 
-// Переименование канала
 export const renameChannel = createAsyncThunk(
   'chat/renameChannel',
   async ({ id, name }, { rejectWithValue }) => {
@@ -99,24 +87,15 @@ export const renameChannel = createAsyncThunk(
       toast.success(t('toasts.channelRenamed'));
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarRenameChannelError'), { 
-        error: error.message, 
-        id, 
-        name 
-      });
-      if (!error.response) {
-        toast.error(t('toasts.networkError'));
-      } else if (error.response?.status === 409) {
-        toast.error(t('errors.channelExists'));
-      } else {
-        toast.error(t('errors.channelExists'));
-      }
+      rollbar.error(t('errors.rollbarRenameChannelError'), { error: error.message, id, name });
+      if (!error.response) toast.error(t('toasts.networkError'));
+      else if (error.response?.status === 409) toast.error(t('errors.channelExists'));
+      else toast.error(t('errors.channelExists'));
       return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
 );
 
-// Удаление канала
 export const deleteChannel = createAsyncThunk(
   'chat/deleteChannel',
   async (id, { rejectWithValue }) => {
@@ -125,15 +104,9 @@ export const deleteChannel = createAsyncThunk(
       toast.success(t('toasts.channelDeleted'));
       return id;
     } catch (error) {
-      rollbar.error(t('errors.rollbarDeleteChannelError'), { 
-        error: error.message, 
-        id 
-      });
-      if (!error.response) {
-        toast.error(t('toasts.networkError'));
-      } else {
-        toast.error(t('errors.channelExists'));
-      }
+      rollbar.error(t('errors.rollbarDeleteChannelError'), { error: error.message, id });
+      if (!error.response) toast.error(t('toasts.networkError'));
+      else toast.error(t('errors.channelExists'));
       return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
     }
   }
@@ -145,11 +118,7 @@ const initialState = {
   currentChannelId: null,
   loading: false,
   sendingMessage: false,
-  modal: {
-    isOpen: false,
-    type: null,
-    channelId: null,
-  },
+  modal: { isOpen: false, type: null, channelId: null },
   error: null,
 };
 
@@ -157,80 +126,35 @@ const chatSlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
-    setCurrentChannel: (state, action) => {
-      state.currentChannelId = action.payload;
-    },
-    addMessage: (state, action) => {
-      state.messages.push(action.payload);
-    },
-    openModal: (state, action) => {
-      state.modal = {
-        isOpen: true,
-        type: action.payload.type,
-        channelId: action.payload.channelId || null,
-      };
-    },
-    closeModal: (state) => {
-      state.modal = {
-        isOpen: false,
-        type: null,
-        channelId: null,
-      };
-    },
+    setCurrentChannel: (state, action) => { state.currentChannelId = action.payload; },
+    addMessage: (state, action) => { state.messages.push(action.payload); },
+    openModal: (state, action) => { state.modal = { isOpen: true, type: action.payload.type, channelId: action.payload.channelId || null }; },
+    closeModal: (state) => { state.modal = { isOpen: false, type: null, channelId: null }; },
   },
   extraReducers: (builder) => {
     builder
-      // fetchChatData
-      .addCase(fetchChatData.pending, (state) => {
-        state.loading = true;
-      })
+      .addCase(fetchChatData.pending, (state) => { state.loading = true; })
       .addCase(fetchChatData.fulfilled, (state, action) => {
         state.loading = false;
-        
-        // ИСПРАВЛЕНО: Сервер возвращает массив каналов напрямую
         const payload = action.payload;
-        if (Array.isArray(payload)) {
-          state.channels = payload;
-        } else {
-          state.channels = payload.channels || [];
-          state.messages = payload.messages || [];
-        }
-        
+        if (Array.isArray(payload)) state.channels = payload;
+        else { state.channels = payload.channels || []; state.messages = payload.messages || []; }
         if (state.channels.length > 0 && !state.currentChannelId) {
           const defaultChannel = state.channels.find(ch => ch.name === 'general');
           state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
         }
       })
-      .addCase(fetchChatData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      // sendMessage
-      .addCase(sendMessage.pending, (state) => {
-        state.sendingMessage = true;
-      })
-      .addCase(sendMessage.fulfilled, (state) => {
-        state.sendingMessage = false;
-      })
-      .addCase(sendMessage.rejected, (state, action) => {
-        state.sendingMessage = false;
-        state.error = action.payload;
-      })
-      // addChannel
-      .addCase(addChannel.fulfilled, (state, action) => {
-        state.channels.push(action.payload);
-        state.currentChannelId = action.payload.id;
-        state.modal.isOpen = false;
-      })
-      // renameChannel
+      .addCase(fetchChatData.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+      .addCase(fetchMessages.fulfilled, (state, action) => { state.messages = action.payload; })
+      .addCase(sendMessage.pending, (state) => { state.sendingMessage = true; })
+      .addCase(sendMessage.fulfilled, (state) => { state.sendingMessage = false; })
+      .addCase(sendMessage.rejected, (state, action) => { state.sendingMessage = false; state.error = action.payload; })
+      .addCase(addChannel.fulfilled, (state, action) => { state.channels.push(action.payload); state.currentChannelId = action.payload.id; state.modal.isOpen = false; })
       .addCase(renameChannel.fulfilled, (state, action) => {
         const index = state.channels.findIndex(ch => ch.id === action.payload.id);
-        if (index !== -1) {
-          state.channels[index] = action.payload;
-        }
+        if (index !== -1) state.channels[index] = action.payload;
         state.modal.isOpen = false;
       })
-      // deleteChannel
       .addCase(deleteChannel.fulfilled, (state, action) => {
         state.channels = state.channels.filter(ch => ch.id !== action.payload);
         state.messages = state.messages.filter(msg => msg.channelId !== action.payload);

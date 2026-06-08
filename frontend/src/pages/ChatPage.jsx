@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { fetchChatData, addMessage, openModal } from '../store/chatSlice';
+import { fetchChatData, fetchMessages, addMessage, openModal } from '../store/chatSlice';
 import { initSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
@@ -35,12 +35,15 @@ function ChatPage() {
       return;
     }
     
-    // Всегда загружаем данные при монтировании
+    // Загружаем каналы и сообщения
     dispatch(fetchChatData()).then((result) => {
       if (result.meta.requestStatus === 'rejected') {
         rollbar.error('Ошибка загрузки данных чата', { error: result.payload });
         toast.error(t('toasts.loadError'));
       } else if (result.meta.requestStatus === 'fulfilled') {
+        // Загружаем сообщения
+        dispatch(fetchMessages());
+        
         try {
           const socket = initSocket(token);
           
