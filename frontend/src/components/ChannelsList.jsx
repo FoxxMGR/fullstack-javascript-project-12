@@ -23,7 +23,7 @@ function ChannelsList() {
             onClick={() => dispatch(setCurrentChannel(channel.id))}
             aria-label={channel.name}
           >
-             {channel.name}
+      {channel.name}
           </Button>
           <ChannelMenu 
             channelId={channel.id} 
