@@ -19,7 +19,7 @@ function ChatPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { token, logout } = useAuth();
-  const { loading, error } = useSelector((state) => state.chat);
+  const { channels, loading, error } = useSelector((state) => state.chat);
 
   useEffect(() => {
     const handleOpenModal = (e) => {
@@ -35,6 +35,7 @@ function ChatPage() {
       return;
     }
     
+    // Всегда загружаем данные при монтировании
     dispatch(fetchChatData()).then((result) => {
       if (result.meta.requestStatus === 'rejected') {
         rollbar.error('Ошибка загрузки данных чата', { error: result.payload });

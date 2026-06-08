@@ -116,9 +116,6 @@ export const renameChannel = createAsyncThunk(
   }
 );
 
-
-
-
 // Удаление канала
 export const deleteChannel = createAsyncThunk(
   'chat/deleteChannel',
@@ -187,16 +184,23 @@ const chatSlice = createSlice({
       .addCase(fetchChatData.pending, (state) => {
         state.loading = true;
       })
-.addCase(fetchChatData.fulfilled, (state, action) => {
-  state.loading = false;
-  state.channels = action.payload.channels || [];
-  state.messages = action.payload.messages || []
+      .addCase(fetchChatData.fulfilled, (state, action) => {
+        state.loading = false;
         
-  if (state.channels.length > 0 && !state.currentChannelId) {
-    const defaultChannel = state.channels.find(ch => ch.name === 'general');
-    state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
-  }
-})
+        // ИСПРАВЛЕНО: Сервер возвращает массив каналов напрямую
+        const payload = action.payload;
+        if (Array.isArray(payload)) {
+          state.channels = payload;
+        } else {
+          state.channels = payload.channels || [];
+          state.messages = payload.messages || [];
+        }
+        
+        if (state.channels.length > 0 && !state.currentChannelId) {
+          const defaultChannel = state.channels.find(ch => ch.name === 'general');
+          state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
+        }
+      })
       .addCase(fetchChatData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

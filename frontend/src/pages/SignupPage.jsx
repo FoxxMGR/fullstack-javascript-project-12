@@ -5,14 +5,14 @@ import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
-import { useDispatch } from 'react-redux'; // Добавить
+import { useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
-import { fetchChatData } from '../store/chatSlice'; // Добавить импорт
+import { fetchChatData } from '../store/chatSlice';
 
 function SignupPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Добавить
+  const dispatch = useDispatch();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,16 +34,16 @@ function SignupPage() {
     setError(null);
     
     try {
-      // Регистрируем пользователя
       await authAPI.signup(values.username, values.password);
-      
-      // Входим
       const loginResponse = await authAPI.login(values.username, values.password);
       const { token } = loginResponse.data;
       localStorage.setItem('token', token);
       
-      // ЗАГРУЖАЕМ ДАННЫЕ ЧАТА (каналы и сообщения)
+      // Загружаем данные чата перед редиректом
       await dispatch(fetchChatData()).unwrap();
+      
+      // Небольшая задержка для уверенности, что Redux обновился
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       toast.success('Регистрация прошла успешно!');
       navigate('/');
