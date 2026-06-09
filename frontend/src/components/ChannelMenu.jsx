@@ -1,7 +1,7 @@
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next'; 
 
-function ChannelMenu({ channelId, channelName, isDefault }) {
+function ChannelMenu({ channelId, isDefault }) {
   const { t } = useTranslation();
   if (isDefault) return null;
 

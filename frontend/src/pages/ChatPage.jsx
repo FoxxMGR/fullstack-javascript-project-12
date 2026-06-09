@@ -18,8 +18,8 @@ function ChatPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token, logout } = useAuth();
-  const { channels, loading, error } = useSelector((state) => state.chat);
+  const { token, } = useAuth();
+  const { loading, error } = useSelector((state) => state.chat);
 
   useEffect(() => {
     const handleOpenModal = (e) => {
@@ -104,9 +104,7 @@ function ChatPage() {
         <Col md={3} className="bg-light p-3" style={{ height: '100vh', overflowY: 'auto' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5>{t('chat.channels')}</h5>
-            <Button variant="outline-danger" size="sm" onClick={logout}>
-              {t('header.logout')}
-            </Button>
+            
           </div>
           <ChannelsList />
         </Col>
