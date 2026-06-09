@@ -1,15 +1,19 @@
 import leoProfanity from 'leo-profanity';
 
+// Загружаем английский словарь
+leoProfanity.loadDictionary('en');
+// Сохраняем английские слова
+const englishWords = leoProfanity.list();
+
 // Загружаем русский словарь
 leoProfanity.loadDictionary('ru');
-leoProfanity.loadDictionary('en');
+// Сохраняем русские слова
+const russianWords = leoProfanity.list();
 
-// // Добавляем дополнительные слова (опционально)
-// const customWords = [
-//   // При необходимости добавьте свои слова
-// ];
-
-// leoProfanity.add(customWords);
+// Создаём объединённый словарь
+leoProfanity.clearList(); // очищаем текущий словарь
+leoProfanity.add(englishWords); // добавляем английские слова
+leoProfanity.add(russianWords); // добавляем русские слова
 
 // Функция для проверки наличия нецензурных слов
 export const containsProfanity = (text) => {
