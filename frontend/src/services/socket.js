@@ -7,11 +7,16 @@ export const initSocket = (token) => {
     socket.disconnect();
   }
   const SOCKET_URL = 'http://localhost:5001';
-  
-  socket = io(SOCKET_URL, {
+
+    socket = io( {
     auth: { token },
-    transports: ['websocket'],
+    // transports: ['websocket'],
   });
+  
+  // socket = io(SOCKET_URL, {
+  //   auth: { token },
+  //   transports: ['websocket'],
+  // });
   
   return socket;
 };
