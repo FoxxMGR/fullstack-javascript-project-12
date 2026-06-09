@@ -49,9 +49,9 @@ export const fetchMessages = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
-  async ({ channelId, body }, { rejectWithValue }) => {
+  async ({ channelId, body, username }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/api/v1/messages', { channelId, body });
+      const response = await api.post('/api/v1/messages', { channelId, body, username });
       return response.data;
     } catch (error) {
       rollbar.error(t('errors.rollbarSendError'), { error: error.message, channelId, body: body.substring(0, 50) });

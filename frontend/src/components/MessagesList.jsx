@@ -8,9 +8,6 @@ function MessagesList() {
   const currentChannel = channels.find(ch => ch.id === currentChannelId);
   const currentMessages = messages.filter(msg => msg.channelId === currentChannelId);
   
-  // Получаем имя текущего пользователя (для новых сообщений без username)
-  const currentUsername = localStorage.getItem('username');
-
   return (
     <>
       <h4 className="mb-3"># {currentChannel?.name || t('chat.selectChannel')}</h4>
@@ -20,7 +17,7 @@ function MessagesList() {
         ) : (
           currentMessages.map((msg) => (
             <div key={msg.id} className="mb-2">
-              <strong>{msg.username || currentUsername || 'admin'}:</strong>{' '}
+              <strong>{msg.username || 'unknown'}:</strong>{' '}
               {filterProfanity(msg.body)}
               <small className="text-muted ms-2">
                 {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : ''}

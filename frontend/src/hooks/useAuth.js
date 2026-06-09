@@ -9,6 +9,7 @@ export const useAuth = () => {
   const rollbar = useRollbar();
   const { t } = useTranslation();
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [currentUsername, setUsername] = useState(localStorage.getItem('username'));
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export const useAuth = () => {
       localStorage.setItem('token', newToken);
       localStorage.setItem('username', username);  // ← ДОБАВИТЬ: сохраняем имя пользователя
       setToken(newToken);
+      setUsername(username);
       toast.success(t('toasts.welcome'));
       navigate('/');
     } catch (err) {
@@ -49,9 +51,10 @@ export const useAuth = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');  // ← ДОБАВИТЬ: удаляем имя пользователя
     setToken(null);
+    setUsername(null);
     toast.info(t('toasts.logout'));
     navigate('/login');
   };
 
-  return { token, login, logout, error, loading };
+  return { token, username: currentUsername, login, logout, error, loading };
 };

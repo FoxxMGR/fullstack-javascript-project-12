@@ -5,11 +5,13 @@ import { sendMessage } from '../store/chatSlice';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { useAuth } from '../hooks/useAuth';
 import { filterProfanity, containsProfanity } from '../services/profanityFilter';
 
 function MessageForm() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const { username } = useAuth();
   const { currentChannelId, sendingMessage } = useSelector((state) => state.chat);
   const [message, setMessage] = useState('');
 
@@ -28,6 +30,7 @@ function MessageForm() {
       await dispatch(sendMessage({
         channelId: currentChannelId,
         body: containsProfanity(body) ? filteredMessage : body,
+        username,
       })).unwrap();
       setMessage('');
     } catch {
