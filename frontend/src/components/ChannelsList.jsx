@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 function ChannelsList() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { channels, currentChannelId } = useSelector((state) => state.chat);
+  const channels = useSelector((state) => state.chat.channels);
+  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
 
   const handleOpenModal = (type, channelId = null) => {
     dispatch(openModal({ type, channelId }));

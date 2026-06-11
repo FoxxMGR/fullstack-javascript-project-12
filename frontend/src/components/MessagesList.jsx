@@ -4,7 +4,9 @@ import { filterProfanity } from '../services/profanityFilter';
 
 function MessagesList() {
   const { t } = useTranslation();
-  const { messages, currentChannelId, channels } = useSelector((state) => state.chat);
+  const messages = useSelector((state) => state.chat.messages);
+  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const channels = useSelector((state) => state.chat.channels);
   const currentChannel = channels.find(ch => ch.id === currentChannelId);
   const currentMessages = messages.filter(msg => msg.channelId === currentChannelId);
   

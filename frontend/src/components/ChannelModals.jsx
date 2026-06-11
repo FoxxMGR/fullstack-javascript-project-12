@@ -27,7 +27,8 @@ const getValidationSchema = (channels, t, currentName = '') => {
 function ChannelModals() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { modal, channels } = useSelector((state) => state.chat);
+  const modal = useSelector((state) => state.chat.modal);
+  const channels = useSelector((state) => state.chat.channels);
   const inputRef = useRef(null);
 
   useEffect(() => {

@@ -19,7 +19,8 @@ function ChatPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { loading, error } = useSelector((state) => state.chat);
+  const loading = useSelector((state) => state.chat.loading);
+  const error = useSelector((state) => state.chat.error);
 
   useEffect(() => {
     const handleOpenModal = (e) => {

@@ -12,7 +12,8 @@ function MessageForm() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { currentChannelId, sendingMessage } = useSelector((state) => state.chat);
+  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const sendingMessage = useSelector((state) => state.chat.sendingMessage);
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
