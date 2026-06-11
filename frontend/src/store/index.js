@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import chatReducer from './chatSlice';
-import { chatApi } from './chatApi';
+  import { chatApi } from './chatApi';
 
 export const store = configureStore({
   reducer: {

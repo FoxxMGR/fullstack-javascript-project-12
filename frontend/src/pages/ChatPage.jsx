@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,8 @@ function ChatPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const currentChannelIdRef = useRef(currentChannelId);
+  currentChannelIdRef.current = currentChannelId;
 
   const { data: channels = [], isLoading, isError, error, refetch } = useGetChannelsQuery();
   const { data: messages = [] } = useGetMessagesQuery(undefined, { skip: isLoading });
@@ -36,11 +38,11 @@ function ChatPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (channels.length > 0 && (!currentChannelId || !channels.some((ch) => ch.id === currentChannelId))) {
+    if (channels.length > 0 && (!currentChannelIdRef.current || !channels.some((ch) => ch.id === currentChannelIdRef.current))) {
       const defaultChannel = channels.find((ch) => ch.name === 'general');
       dispatch(setCurrentChannel(defaultChannel?.id || channels[0]?.id));
     }
-  }, [channels, currentChannelId, dispatch]);
+  }, [channels, dispatch]);
 
   useEffect(() => {
     if (!user || isLoading) return;
