@@ -130,6 +130,20 @@ const chatSlice = createSlice({
     addMessage: (state, action) => { state.messages.push(action.payload); },
     openModal: (state, action) => { state.modal = { isOpen: true, type: action.payload.type, channelId: action.payload.channelId || null }; },
     closeModal: (state) => { state.modal = { isOpen: false, type: null, channelId: null }; },
+    socketNewChannel: (state, action) => { state.channels.push(action.payload); },
+    socketRenameChannel: (state, action) => {
+      const index = state.channels.findIndex(ch => ch.id === action.payload.id);
+      if (index !== -1) state.channels[index] = action.payload;
+    },
+    socketRemoveChannel: (state, action) => {
+      const id = action.payload.id;
+      state.channels = state.channels.filter(ch => ch.id !== id);
+      state.messages = state.messages.filter(msg => msg.channelId !== id);
+      if (state.currentChannelId === id) {
+        const defaultChannel = state.channels.find(ch => ch.name === 'general');
+        state.currentChannelId = defaultChannel?.id || state.channels[0]?.id;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -167,5 +181,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setCurrentChannel, addMessage, openModal, closeModal } = chatSlice.actions;
+export const { setCurrentChannel, addMessage, openModal, closeModal, socketNewChannel, socketRenameChannel, socketRemoveChannel } = chatSlice.actions;
 export default chatSlice.reducer;

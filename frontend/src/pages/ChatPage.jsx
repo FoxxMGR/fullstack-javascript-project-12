@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { fetchChatData, fetchMessages, addMessage, openModal } from '../store/chatSlice';
+import { fetchChatData, fetchMessages, addMessage, openModal, socketNewChannel, socketRenameChannel, socketRemoveChannel } from '../store/chatSlice';
 import { initSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
@@ -53,6 +53,18 @@ function ChatPage() {
           
           socket.on('newMessage', (message) => {
             dispatch(addMessage(message));
+          });
+
+          socket.on('newChannel', (channel) => {
+            dispatch(socketNewChannel(channel));
+          });
+
+          socket.on('renameChannel', (channel) => {
+            dispatch(socketRenameChannel(channel));
+          });
+
+          socket.on('removeChannel', ({ id }) => {
+            dispatch(socketRemoveChannel({ id }));
           });
           
           socket.on('connect_error', (error) => {
