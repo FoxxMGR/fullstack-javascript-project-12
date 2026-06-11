@@ -1,15 +1,16 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useGetChannelsQuery, useGetMessagesQuery } from '../store/chatApi';
 import { filterProfanity } from '../services/profanityFilter';
 
 function MessagesList() {
   const { t } = useTranslation();
-  const messages = useSelector((state) => state.chat.messages);
+  const { data: messages = [] } = useGetMessagesQuery();
+  const { data: channels = [] } = useGetChannelsQuery();
   const currentChannelId = useSelector((state) => state.chat.currentChannelId);
-  const channels = useSelector((state) => state.chat.channels);
   const currentChannel = channels.find(ch => ch.id === currentChannelId);
   const currentMessages = messages.filter(msg => msg.channelId === currentChannelId);
-  
+
   return (
     <>
       <h4 className="mb-3"># {currentChannel?.name || t('chat.selectChannel')}</h4>

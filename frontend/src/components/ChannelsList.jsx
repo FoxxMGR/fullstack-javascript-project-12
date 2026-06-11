@@ -1,13 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Stack } from 'react-bootstrap';
 import { setCurrentChannel, openModal } from '../store/chatSlice';
+import { useGetChannelsQuery } from '../store/chatApi';
 import ChannelMenu from './ChannelMenu';
 import { useTranslation } from 'react-i18next';
 
 function ChannelsList() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const channels = useSelector((state) => state.chat.channels);
+  const { data: channels = [] } = useGetChannelsQuery();
   const currentChannelId = useSelector((state) => state.chat.currentChannelId);
 
   const handleOpenModal = (type, channelId = null) => {
@@ -26,16 +27,16 @@ function ChannelsList() {
           >
       {channel.name}
           </Button>
-          <ChannelMenu 
-            channelId={channel.id} 
+          <ChannelMenu
+            channelId={channel.id}
             channelName={channel.name}
             isDefault={channel.name === 'general'}
           />
         </div>
       ))}
-      <Button 
-        variant="outline-primary" 
-        size="sm" 
+      <Button
+        variant="outline-primary"
+        size="sm"
         onClick={() => handleOpenModal('add')}
         className="mt-2"
       >

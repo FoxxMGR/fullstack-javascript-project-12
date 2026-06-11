@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Form as FormikForm, Field } from 'formik';
 import * as Yup from 'yup';
-import { addChannel, renameChannel, deleteChannel, closeModal } from '../store/chatSlice';
+import { useGetChannelsQuery, useAddChannelMutation, useRenameChannelMutation, useDeleteChannelMutation } from '../store/chatApi';
+import { setCurrentChannel, closeModal } from '../store/chatSlice';
 import { useTranslation } from 'react-i18next';
 import { containsProfanity, filterProfanity } from '../services/profanityFilter';
 import { toast } from 'react-toastify';
@@ -28,7 +29,11 @@ function ChannelModals() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const modal = useSelector((state) => state.chat.modal);
-  const channels = useSelector((state) => state.chat.channels);
+  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const { data: channels = [] } = useGetChannelsQuery();
+  const [addChannel] = useAddChannelMutation();
+  const [renameChannel] = useRenameChannelMutation();
+  const [deleteChannel] = useDeleteChannelMutation();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -41,44 +46,62 @@ function ChannelModals() {
 
   const handleAdd = async (values, { setSubmitting }) => {
     let name = values.name.trim();
-    
-    // Фильтруем нецензурные слова
+
     if (containsProfanity(name)) {
       name = filterProfanity(name);
       toast.warning(t('errors.profanity'));
     }
-    
-    await dispatch(addChannel(name)).unwrap();
+
+    try {
+      const result = await addChannel(name).unwrap();
+      dispatch(setCurrentChannel(result.id));
+      dispatch(closeModal());
+    } catch {
+      // Toast уже показан в onQueryStarted
+    }
     setSubmitting(false);
   };
 
   const handleRename = async (values, { setSubmitting }) => {
     let name = values.name.trim();
     const channel = channels.find(ch => ch.id === modal.channelId);
-    
+
     if (channel?.name === name) {
       dispatch(closeModal());
       setSubmitting(false);
       return;
     }
-    
-    // Фильтруем нецензурные слова
+
     if (containsProfanity(name)) {
       name = filterProfanity(name);
       toast.warning(t('errors.profanity'));
     }
-    
-    await dispatch(renameChannel({ id: modal.channelId, name })).unwrap();
+
+    try {
+      await renameChannel({ id: modal.channelId, name }).unwrap();
+      dispatch(closeModal());
+    } catch {
+      // Toast уже показан в onQueryStarted
+    }
     setSubmitting(false);
   };
 
   const handleDelete = async () => {
-    await dispatch(deleteChannel(modal.channelId)).unwrap();
+    try {
+      await deleteChannel(modal.channelId).unwrap();
+      if (currentChannelId === modal.channelId) {
+        const remaining = channels.filter(ch => ch.id !== modal.channelId);
+        const defaultChannel = remaining.find(ch => ch.name === 'general');
+        dispatch(setCurrentChannel(defaultChannel?.id || remaining[0]?.id || null));
+      }
+      dispatch(closeModal());
+    } catch {
+      // Toast уже показан в onQueryStarted
+    }
   };
 
   const currentChannel = channels.find(ch => ch.id === modal.channelId);
 
-  // Модалка добавления
   if (modal.type === 'add') {
     const validationSchema = getValidationSchema(channels, t);
     return (
@@ -121,7 +144,6 @@ function ChannelModals() {
     );
   }
 
-  // Модалка переименования
   if (modal.type === 'rename') {
     const validationSchema = getValidationSchema(channels, t, currentChannel?.name);
     return (
@@ -163,7 +185,6 @@ function ChannelModals() {
     );
   }
 
-  // Модалка удаления
   if (modal.type === 'remove') {
     return (
       <Modal show={modal.isOpen} onHide={handleClose} centered>

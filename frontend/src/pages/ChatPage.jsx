@@ -3,24 +3,29 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { Container, Row, Col, Alert, Spinner, Button } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { fetchChatData, fetchMessages, addMessage, openModal, socketNewChannel, socketRenameChannel, socketRemoveChannel } from '../store/chatSlice';
+import { useGetChannelsQuery, useGetMessagesQuery, chatApi } from '../store/chatApi';
+import { setCurrentChannel, openModal } from '../store/chatSlice';
 import { initSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
 import MessageForm from '../components/MessageForm';
 import ChannelModals from '../components/ChannelModals';
-import { useRollbar } from '@rollbar/react';
 
 function ChatPage() {
-  const rollbar = useRollbar();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const loading = useSelector((state) => state.chat.loading);
-  const error = useSelector((state) => state.chat.error);
+  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+
+  const { data: channels = [], isLoading, isError, error, refetch } = useGetChannelsQuery();
+  const { data: messages = [] } = useGetMessagesQuery(undefined, { skip: isLoading });
+
+  useEffect(() => {
+    if (!user) navigate('/login');
+  }, [user, navigate]);
 
   useEffect(() => {
     const handleOpenModal = (e) => {
@@ -31,66 +36,66 @@ function ChatPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
+    if (channels.length > 0 && (!currentChannelId || !channels.some((ch) => ch.id === currentChannelId))) {
+      const defaultChannel = channels.find((ch) => ch.name === 'general');
+      dispatch(setCurrentChannel(defaultChannel?.id || channels[0]?.id));
     }
-    
-    // Загружаем каналы и сообщения
-    dispatch(fetchChatData()).then((result) => {
-      if (result.meta.requestStatus === 'rejected') {
-        rollbar.error('Ошибка загрузки данных чата', { error: result.payload });
-        toast.error(t('toasts.loadError'));
-      } else if (result.meta.requestStatus === 'fulfilled') {
-        // Загружаем сообщения
-        dispatch(fetchMessages());
-        
-        try {
-          const socket = initSocket(user.token);
-          
-          socket.on('connect', () => {
-            console.log('WebSocket connected');
-          });
-          
-          socket.on('newMessage', (message) => {
-            dispatch(addMessage(message));
-          });
+  }, [channels, currentChannelId, dispatch]);
 
-          socket.on('newChannel', (channel) => {
-            dispatch(socketNewChannel(channel));
-          });
+  useEffect(() => {
+    if (!user || isLoading) return;
 
-          socket.on('renameChannel', (channel) => {
-            dispatch(socketRenameChannel(channel));
-          });
+    const socket = initSocket(user.token);
 
-          socket.on('removeChannel', ({ id }) => {
-            dispatch(socketRemoveChannel({ id }));
-          });
-          
-          socket.on('connect_error', (error) => {
-            console.error('WebSocket connection error:', error);
-            toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
-          });
+    socket.on('newMessage', (message) => {
+      dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
+        draft.push(message);
+      }));
+    });
 
-          socket.on('disconnect', (reason) => {
-            if (reason !== 'io client disconnect') {
-              toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
-            }
-          });
-        } catch (err) {
-          console.error('Failed to initialize socket:', err);
-          toast.error(t('toasts.websocketError'));
+    socket.on('newChannel', (channel) => {
+      dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
+        if (!draft.some((ch) => ch.id === channel.id)) {
+          draft.push(channel);
         }
+      }));
+    });
+
+    socket.on('renameChannel', (channel) => {
+      dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
+        const idx = draft.findIndex((ch) => ch.id === channel.id);
+        if (idx !== -1) draft[idx] = channel;
+      }));
+    });
+
+    socket.on('removeChannel', ({ id }) => {
+      dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
+        const idx = draft.findIndex((ch) => ch.id === id);
+        if (idx !== -1) draft.splice(idx, 1);
+      }));
+      dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
+        for (let i = draft.length - 1; i >= 0; i--) {
+          if (draft[i].channelId === id) draft.splice(i, 1);
+        }
+      }));
+    });
+
+    socket.on('connect_error', () => {
+      toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
+    });
+
+    socket.on('disconnect', (reason) => {
+      if (reason !== 'io client disconnect') {
+        toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
       }
     });
-    
-    return () => {
-      closeSocket();
-    };
-  }, [user, dispatch, navigate, rollbar, t]);
 
-  if (loading) {
+    return () => closeSocket();
+  }, [user, isLoading, dispatch, t]);
+
+  if (!user) return null;
+
+  if (isLoading) {
     return (
       <Container className="mt-5 text-center">
         <Spinner animation="border" variant="primary" />
@@ -99,13 +104,13 @@ function ChatPage() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <Container className="mt-5">
         <Alert variant="danger">
           <Alert.Heading>{t('errors.loadError')}</Alert.Heading>
-          <p>{error}</p>
-          <Button onClick={() => dispatch(fetchChatData())}>{t('errors.retry')}</Button>
+          <p>{error?.data?.message || t('errors.loadError')}</p>
+          <button className="btn btn-primary" onClick={refetch}>{t('errors.retry')}</button>
         </Alert>
       </Container>
     );
@@ -117,7 +122,6 @@ function ChatPage() {
         <Col md={3} className="bg-light p-3" style={{ height: '100vh', overflowY: 'auto' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5>{t('chat.channels')}</h5>
-            
           </div>
           <ChannelsList />
         </Col>
