@@ -130,7 +130,11 @@ const chatSlice = createSlice({
     addMessage: (state, action) => { state.messages.push(action.payload); },
     openModal: (state, action) => { state.modal = { isOpen: true, type: action.payload.type, channelId: action.payload.channelId || null }; },
     closeModal: (state) => { state.modal = { isOpen: false, type: null, channelId: null }; },
-    socketNewChannel: (state, action) => { state.channels.push(action.payload); },
+    socketNewChannel: (state, action) => {
+      if (!state.channels.some((ch) => ch.id === action.payload.id)) {
+        state.channels.push(action.payload);
+      }
+    },
     socketRenameChannel: (state, action) => {
       const index = state.channels.findIndex(ch => ch.id === action.payload.id);
       if (index !== -1) state.channels[index] = action.payload;
@@ -163,7 +167,7 @@ const chatSlice = createSlice({
       .addCase(sendMessage.pending, (state) => { state.sendingMessage = true; })
       .addCase(sendMessage.fulfilled, (state) => { state.sendingMessage = false; })
       .addCase(sendMessage.rejected, (state, action) => { state.sendingMessage = false; state.error = action.payload; })
-      .addCase(addChannel.fulfilled, (state, action) => { state.channels.push(action.payload); state.currentChannelId = action.payload.id; state.modal.isOpen = false; })
+      .addCase(addChannel.fulfilled, (state, action) => { state.currentChannelId = action.payload.id; state.modal.isOpen = false; })
       .addCase(renameChannel.fulfilled, (state, action) => {
         const index = state.channels.findIndex(ch => ch.id === action.payload.id);
         if (index !== -1) state.channels[index] = action.payload;
