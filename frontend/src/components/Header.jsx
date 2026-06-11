@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 
 function Header() {
   const { t } = useTranslation();
-  const { token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -20,7 +20,7 @@ function Header() {
           {t('header.brand')}
         </Navbar.Brand>
         <Nav className="ms-auto">
-          {token ? (
+          {user ? (
             <Button variant="outline-danger" size="sm" onClick={handleLogout}>
               {t('header.logout')}
             </Button>

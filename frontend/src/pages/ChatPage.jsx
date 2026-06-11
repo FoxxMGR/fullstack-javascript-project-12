@@ -18,7 +18,7 @@ function ChatPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { token, } = useAuth();
+  const { user } = useAuth();
   const { loading, error } = useSelector((state) => state.chat);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ function ChatPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       navigate('/login');
       return;
     }
@@ -45,7 +45,7 @@ function ChatPage() {
         dispatch(fetchMessages());
         
         try {
-          const socket = initSocket(token);
+          const socket = initSocket(user.token);
           
           socket.on('connect', () => {
             console.log('WebSocket connected');
@@ -87,7 +87,7 @@ function ChatPage() {
     return () => {
       closeSocket();
     };
-  }, [token, dispatch, navigate, rollbar, t]);
+  }, [user, dispatch, navigate, rollbar, t]);
 
   if (loading) {
     return (

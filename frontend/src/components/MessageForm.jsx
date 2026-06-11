@@ -11,7 +11,7 @@ import { filterProfanity, containsProfanity } from '../services/profanityFilter'
 function MessageForm() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { username } = useAuth();
+  const { user } = useAuth();
   const { currentChannelId, sendingMessage } = useSelector((state) => state.chat);
   const [message, setMessage] = useState('');
 
@@ -30,7 +30,7 @@ function MessageForm() {
       await dispatch(sendMessage({
         channelId: currentChannelId,
         body: containsProfanity(body) ? filteredMessage : body,
-        username,
+        username: user?.username,
       })).unwrap();
       setMessage('');
     } catch {
