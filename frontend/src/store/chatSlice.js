@@ -1,23 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import { toast } from 'react-toastify';
-import Rollbar from 'rollbar';
 import i18n from '../i18n';
-
-const rollbar = new Rollbar({
-  accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
-  environment: import.meta.env.VITE_ROLLBAR_ENVIRONMENT || 'development',
-});
-
-const api = axios.create();
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import api from '../services/api';
 
 const t = i18n.t;
 
@@ -28,7 +12,6 @@ export const fetchChatData = createAsyncThunk(
       const response = await api.get('/api/v1/channels');
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarLoadError'), { error: error.message, url: '/api/v1/data' });
       if (!error.response) toast.error(t('toasts.networkError'));
       return rejectWithValue(error.response?.data?.message || t('errors.loadError'));
     }
@@ -54,7 +37,6 @@ export const sendMessage = createAsyncThunk(
       const response = await api.post('/api/v1/messages', { channelId, body, username });
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarSendError'), { error: error.message, channelId, body: body.substring(0, 50) });
       if (!error.response) toast.error(t('toasts.networkError'));
       else toast.error(t('toasts.sendError'));
       return rejectWithValue(error.response?.data?.message || t('errors.sendError'));
@@ -70,7 +52,6 @@ export const addChannel = createAsyncThunk(
       toast.success(t('toasts.channelCreated'));
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarAddChannelError'), { error: error.message, name });
       if (!error.response) toast.error(t('toasts.networkError'));
       else if (error.response?.status === 409) toast.error(t('errors.channelExists'));
       else toast.error(t('errors.channelExists'));
@@ -87,7 +68,6 @@ export const renameChannel = createAsyncThunk(
       toast.success(t('toasts.channelRenamed'));
       return response.data;
     } catch (error) {
-      rollbar.error(t('errors.rollbarRenameChannelError'), { error: error.message, id, name });
       if (!error.response) toast.error(t('toasts.networkError'));
       else if (error.response?.status === 409) toast.error(t('errors.channelExists'));
       else toast.error(t('errors.channelExists'));
@@ -104,7 +84,6 @@ export const deleteChannel = createAsyncThunk(
       toast.success(t('toasts.channelDeleted'));
       return id;
     } catch (error) {
-      rollbar.error(t('errors.rollbarDeleteChannelError'), { error: error.message, id });
       if (!error.response) toast.error(t('toasts.networkError'));
       else toast.error(t('errors.channelExists'));
       return rejectWithValue(error.response?.data?.message || t('errors.channelExists'));
