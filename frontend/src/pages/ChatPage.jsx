@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Container, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { useGetChannelsQuery, useGetMessagesQuery, chatApi } from '../store/chatApi';
-import { setCurrentChannel, openModal } from '../store/chatSlice';
+import { useGetChannelsQuery, chatApi } from '../store/chatApi';
+import { setCurrentChannel } from '../store/chatSlice';
+import { chatSelectors } from '../store/chatSlice';
 import { initSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
@@ -18,24 +19,16 @@ function ChatPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const currentChannelId = useSelector(chatSelectors.selectCurrentChannelId);
   const currentChannelIdRef = useRef(currentChannelId);
-  currentChannelIdRef.current = currentChannelId;
+  
 
   const { data: channels = [], isLoading, isError, error, refetch } = useGetChannelsQuery();
-  const { data: messages = [] } = useGetMessagesQuery(undefined, { skip: isLoading });
+  
 
   useEffect(() => {
     if (!user) navigate('/login');
   }, [user, navigate]);
-
-  useEffect(() => {
-    const handleOpenModal = (e) => {
-      dispatch(openModal(e.detail));
-    };
-    window.addEventListener('openModal', handleOpenModal);
-    return () => window.removeEventListener('openModal', handleOpenModal);
-  }, [dispatch]);
 
   useEffect(() => {
     if (channels.length > 0 && (!currentChannelIdRef.current || !channels.some((ch) => ch.id === currentChannelIdRef.current))) {

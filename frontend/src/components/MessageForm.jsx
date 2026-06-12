@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Form, Button } from 'react-bootstrap';
 import { useSendMessageMutation } from '../store/chatApi';
+import { chatSelectors } from '../store/chatSlice';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
@@ -10,7 +11,7 @@ import { filterProfanity, containsProfanity } from '../services/profanityFilter'
 function MessageForm() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const currentChannelId = useSelector(chatSelectors.selectCurrentChannelId);
   const [sendMessage, { isLoading: sendingMessage }] = useSendMessageMutation();
   const [message, setMessage] = useState('');
 

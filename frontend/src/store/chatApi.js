@@ -1,19 +1,28 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { toast } from 'react-toastify';
-import i18n from '../i18n';
+import { clearUser } from './authSlice';
 
-const t = i18n.t;
+const baseQuery = fetchBaseQuery({
+  baseUrl: '/api/v1',
+  prepareHeaders: (headers) => {
+    const token = localStorage.getItem('token');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions);
+  if (result.error?.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    api.dispatch(clearUser());
+  }
+  return result;
+};
 
 export const chatApi = createApi({
   reducerPath: 'chatApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) headers.set('Authorization', `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Channels', 'Messages'],
   endpoints: (builder) => ({
     getChannels: builder.query({
@@ -34,13 +43,6 @@ export const chatApi = createApi({
         method: 'POST',
         body: { channelId, body, username },
       }),
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-        } catch {
-          toast.error(t('toasts.sendError'));
-        }
-      },
     }),
     addChannel: builder.mutation({
       query: (name) => ({
@@ -49,15 +51,6 @@ export const chatApi = createApi({
         body: { name },
       }),
       invalidatesTags: ['Channels'],
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          toast.success(t('toasts.channelCreated'));
-        } catch (err) {
-          if (err?.error?.status === 409) toast.error(t('errors.channelExists'));
-          else toast.error(t('toasts.networkError'));
-        }
-      },
     }),
     renameChannel: builder.mutation({
       query: ({ id, name }) => ({
@@ -66,15 +59,6 @@ export const chatApi = createApi({
         body: { name },
       }),
       invalidatesTags: ['Channels'],
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          toast.success(t('toasts.channelRenamed'));
-        } catch (err) {
-          if (err?.error?.status === 409) toast.error(t('errors.channelExists'));
-          else toast.error(t('toasts.networkError'));
-        }
-      },
     }),
     deleteChannel: builder.mutation({
       query: (id) => ({
@@ -82,14 +66,6 @@ export const chatApi = createApi({
         method: 'DELETE',
       }),
       invalidatesTags: ['Channels', 'Messages'],
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-          toast.success(t('toasts.channelDeleted'));
-        } catch {
-          toast.error(t('toasts.networkError'));
-        }
-      },
     }),
   }),
 });

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Stack } from 'react-bootstrap';
-import { setCurrentChannel, openModal } from '../store/chatSlice';
+import { setCurrentChannel, openModal, chatSelectors } from '../store/chatSlice';
 import { useGetChannelsQuery } from '../store/chatApi';
 import ChannelMenu from './ChannelMenu';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ function ChannelsList() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { data: channels = [] } = useGetChannelsQuery();
-  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const currentChannelId = useSelector(chatSelectors.selectCurrentChannelId);
 
   const handleOpenModal = (type, channelId = null) => {
     dispatch(openModal({ type, channelId }));

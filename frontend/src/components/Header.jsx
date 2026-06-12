@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
@@ -6,12 +6,6 @@ import { useAuth } from '../hooks/useAuth';
 function Header() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <Navbar bg="light" expand="lg" className="mb-4">
@@ -21,7 +15,7 @@ function Header() {
         </Navbar.Brand>
         <Nav className="ms-auto">
           {user ? (
-            <Button variant="outline-danger" size="sm" onClick={handleLogout}>
+            <Button variant="outline-danger" size="sm" onClick={logout}>
               {t('header.logout')}
             </Button>
           ) : (

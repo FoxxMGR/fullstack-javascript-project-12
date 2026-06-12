@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { useAuth } from '../hooks/useAuth';
 import { authAPI } from '../services/api';
 
 function SignupPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { login, error: authError, loading: authLoading } = useAuth();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,29 +30,19 @@ function SignupPage() {
   const handleSubmit = async (values, { setSubmitting }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await authAPI.signup(values.username, values.password);
-      const loginResponse = await authAPI.login(values.username, values.password);
-      const { token } = loginResponse.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', values.username);
-
-      toast.success(t('toasts.signupSuccess'));
-      navigate('/');
+      await login(values.username, values.password);
     } catch (err) {
       let errorMessage = t('errors.signupFailed');
       if (err.response?.status === 409) {
         errorMessage = t('errors.userExists');
       } else if (!err.response) {
         errorMessage = t('errors.networkError');
-        toast.error(errorMessage);
       }
       setError(errorMessage);
-      if (err.response) {
-        toast.error(errorMessage);
-      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
       setSubmitting(false);
@@ -63,13 +54,13 @@ function SignupPage() {
       <Row className="justify-content-md-center">
         <Col md={6}>
           <h2 className="text-center mb-4">{t('signup.title')}</h2>
-          
-          {error && (
+
+          {(error || authError) && (
             <Alert variant="danger" className="mb-3">
-              {error}
+              {error || authError}
             </Alert>
           )}
-          
+
           <Formik
             initialValues={{ username: '', password: '', confirmPassword: '' }}
             validationSchema={getValidationSchema}
@@ -119,15 +110,15 @@ function SignupPage() {
                   <ErrorMessage name="confirmPassword" component="div" className="text-danger" />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  variant="primary" 
+                <Button
+                  type="submit"
+                  variant="primary"
                   className="w-100 mb-3"
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || loading || authLoading}
                 >
                   {loading ? '...' : t('signup.submit')}
                 </Button>
-                
+
                 <div className="text-center">
                   <Link to="/login">{t('signup.loginLink')}</Link>
                 </div>

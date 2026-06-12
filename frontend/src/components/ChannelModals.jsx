@@ -4,7 +4,7 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Form as FormikForm, Field } from 'formik';
 import * as Yup from 'yup';
 import { useGetChannelsQuery, useAddChannelMutation, useRenameChannelMutation, useDeleteChannelMutation } from '../store/chatApi';
-import { setCurrentChannel, closeModal } from '../store/chatSlice';
+import { setCurrentChannel, closeModal, chatSelectors } from '../store/chatSlice';
 import { useTranslation } from 'react-i18next';
 import { containsProfanity, filterProfanity } from '../services/profanityFilter';
 import { toast } from 'react-toastify';
@@ -28,8 +28,8 @@ const getValidationSchema = (channels, t, currentName = '') => {
 function ChannelModals() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const modal = useSelector((state) => state.chat.modal);
-  const currentChannelId = useSelector((state) => state.chat.currentChannelId);
+  const modal = useSelector(chatSelectors.selectModal);
+  const currentChannelId = useSelector(chatSelectors.selectCurrentChannelId);
   const { data: channels = [] } = useGetChannelsQuery();
   const [addChannel] = useAddChannelMutation();
   const [renameChannel] = useRenameChannelMutation();

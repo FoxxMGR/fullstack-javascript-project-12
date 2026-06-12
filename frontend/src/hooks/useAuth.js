@@ -1,20 +1,18 @@
 import { useState, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { authAPI } from '../services/api';
 import { useRollbar } from '@rollbar/react';
-
-const getUserFromStorage = () => {
-  const token = localStorage.getItem('token');
-  const username = localStorage.getItem('username');
-  return token && username ? { token, username } : null;
-};
+import { authAPI } from '../services/api';
+import { chatApi } from '../store/chatApi';
+import { setUser } from '../store/authSlice';
 
 export const useAuth = () => {
   const rollbar = useRollbar();
   const { t } = useTranslation();
-  const [user, setUser] = useState(getUserFromStorage);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +27,7 @@ export const useAuth = () => {
 
       localStorage.setItem('token', token);
       localStorage.setItem('username', username);
-      setUser({ token, username });
+      dispatch(setUser({ token, username }));
       toast.success(t('toasts.welcome'));
       navigate('/');
     } catch (err) {
@@ -49,15 +47,16 @@ export const useAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [t, navigate, rollbar]);
+  }, [t, navigate, rollbar, dispatch]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    setUser(null);
+    dispatch(setUser(null));
+    dispatch(chatApi.util.resetApiState());
     toast.info(t('toasts.logout'));
     navigate('/login');
-  }, [t, navigate]);
+  }, [t, navigate, dispatch]);
 
-  return { user, login, logout, error, loading };
+  return { user, login, logout, error, loading, isAuth: !!user };
 };
