@@ -34,7 +34,7 @@ function MessageForm() {
       }).unwrap();
       setMessage('');
     } catch {
-      // Toast уже показан в onQueryStarted
+      toast.error(t('toasts.sendError'));
     }
   };
 

@@ -56,8 +56,9 @@ function ChannelModals() {
       const result = await addChannel(name).unwrap();
       dispatch(setCurrentChannel(result.id));
       dispatch(closeModal());
-    } catch {
-      // Toast уже показан в onQueryStarted
+    } catch (err) {
+      if (err?.status === 409) toast.error(t('errors.channelExists'));
+      else toast.error(t('toasts.networkError'));
     }
     setSubmitting(false);
   };
@@ -80,8 +81,9 @@ function ChannelModals() {
     try {
       await renameChannel({ id: modal.channelId, name }).unwrap();
       dispatch(closeModal());
-    } catch {
-      // Toast уже показан в onQueryStarted
+    } catch (err) {
+      if (err?.status === 409) toast.error(t('errors.channelExists'));
+      else toast.error(t('toasts.networkError'));
     }
     setSubmitting(false);
   };
@@ -96,7 +98,7 @@ function ChannelModals() {
       }
       dispatch(closeModal());
     } catch {
-      // Toast уже показан в onQueryStarted
+      toast.error(t('toasts.networkError'));
     }
   };
 
