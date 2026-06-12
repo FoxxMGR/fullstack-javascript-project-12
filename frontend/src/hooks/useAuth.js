@@ -25,8 +25,7 @@ export const useAuth = () => {
       const response = await authAPI.login(username, password);
       const { token } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', username);
+      localStorage.setItem('user', JSON.stringify({ token, username }));
       dispatch(setUser({ token, username }));
       toast.success(t('toasts.welcome'));
       navigate('/');
@@ -49,14 +48,34 @@ export const useAuth = () => {
     }
   }, [t, navigate, rollbar, dispatch]);
 
+  const signup = useCallback(async (username, password) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await authAPI.signup(username, password);
+      await login(username, password);
+    } catch (err) {
+      let errorMessage = t('errors.signupFailed');
+      if (err.response?.status === 409) {
+        errorMessage = t('errors.userExists');
+      } else if (!err.response) {
+        errorMessage = t('errors.networkError');
+      }
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [login, t]);
+
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    localStorage.removeItem('user');
     dispatch(setUser(null));
     dispatch(chatApi.util.resetApiState());
     toast.info(t('toasts.logout'));
     navigate('/login');
   }, [t, navigate, dispatch]);
 
-  return { user, login, logout, error, loading, isAuth: !!user };
+  return { user, login, signup, logout, error, loading, isAuth: !!user };
 };

@@ -4,8 +4,13 @@ import { clearUser } from './authSlice';
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/v1',
   prepareHeaders: (headers) => {
-    const token = localStorage.getItem('token');
-    if (token) headers.set('Authorization', `Bearer ${token}`);
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const { token } = JSON.parse(raw);
+        if (token) headers.set('Authorization', `Bearer ${token}`);
+      }
+    } catch { /* ignore */ }
     return headers;
   },
 });
@@ -13,8 +18,7 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
   if (result.error?.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    localStorage.removeItem('user');
     api.dispatch(clearUser());
   }
   return result;

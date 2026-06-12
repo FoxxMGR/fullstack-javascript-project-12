@@ -6,11 +6,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
-import { authAPI } from '../services/api';
 
 function SignupPage() {
   const { t } = useTranslation();
-  const { login, error: authError, loading: authLoading } = useAuth();
+  const { signup, error: authError, loading: authLoading } = useAuth();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,8 +31,7 @@ function SignupPage() {
     setError(null);
 
     try {
-      await authAPI.signup(values.username, values.password);
-      await login(values.username, values.password);
+      await signup(values.username, values.password);
     } catch (err) {
       let errorMessage = t('errors.signupFailed');
       if (err.response?.status === 409) {

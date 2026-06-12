@@ -10,10 +10,13 @@ const api = axios.create();
 
 // Интерсептор для добавления токена
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const { token } = JSON.parse(raw);
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch { /* ignore */ }
   return config;
 });
 
