@@ -54,6 +54,7 @@ function ChannelModals() {
 
     try {
       const result = await addChannel(name).unwrap();
+      toast.success(t('toasts.channelCreated'));
       dispatch(setCurrentChannel(result.id));
       dispatch(closeModal());
     } catch (err) {
@@ -80,6 +81,7 @@ function ChannelModals() {
 
     try {
       await renameChannel({ id: modal.channelId, name }).unwrap();
+      toast.success(t('toasts.channelRenamed'));
       dispatch(closeModal());
     } catch (err) {
       if (err?.status === 409) toast.error(t('errors.channelExists'));
@@ -91,6 +93,7 @@ function ChannelModals() {
   const handleDelete = async () => {
     try {
       await deleteChannel(modal.channelId).unwrap();
+      toast.success(t('toasts.channelDeleted'));
       if (currentChannelId === modal.channelId) {
         const remaining = channels.filter(ch => ch.id !== modal.channelId);
         const defaultChannel = remaining.find(ch => ch.name === 'general');
