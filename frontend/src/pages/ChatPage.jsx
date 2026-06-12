@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,22 +20,19 @@ function ChatPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const currentChannelId = useSelector(chatSelectors.selectCurrentChannelId);
-  const currentChannelIdRef = useRef(currentChannelId);
-  
 
   const { data: channels = [], isLoading, isError, error, refetch } = useGetChannelsQuery();
-  
 
   useEffect(() => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
   useEffect(() => {
-    if (channels.length > 0 && (!currentChannelIdRef.current || !channels.some((ch) => ch.id === currentChannelIdRef.current))) {
+    if (channels.length > 0 && !channels.some((ch) => ch.id === currentChannelId)) {
       const defaultChannel = channels.find((ch) => ch.name === 'general');
       dispatch(setCurrentChannel(defaultChannel?.id || channels[0]?.id));
     }
-  }, [channels, dispatch]);
+  }, [channels, currentChannelId, dispatch]);
 
   useEffect(() => {
     if (!user || isLoading) return;
