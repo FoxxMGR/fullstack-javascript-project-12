@@ -5,8 +5,9 @@ import { Provider as RollbarProvider, ErrorBoundary } from '@rollbar/react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App.jsx';
 import { store } from './store';
-import './i18n';
-import i18n from './i18n';
+import i18n, { initI18n } from './i18n';
+
+initI18n();
 
 const t = i18n.t;
 

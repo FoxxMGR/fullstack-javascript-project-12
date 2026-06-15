@@ -8,15 +8,17 @@ const resources = {
   },
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: 'ru', // дефолтная локаль - ru, автоматическое определение НЕ используется
-    fallbackLng: 'ru',
-    interpolation: {
-      escapeValue: false, // React уже экранирует значения
-    },
-  });
+export const initI18n = () => {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: 'ru',
+      fallbackLng: 'ru',
+      interpolation: {
+        escapeValue: false,
+      },
+    });
+};
 
 export default i18n;
