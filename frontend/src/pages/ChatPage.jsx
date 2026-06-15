@@ -8,7 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useGetChannelsQuery, chatApi } from '../store/chatApi';
 import { setCurrentChannel } from '../store/chatSlice';
 import { chatSelectors } from '../store/chatSlice';
-import { initSocket, closeSocket } from '../services/socket';
+import { getSocket, closeSocket } from '../services/socket';
 import ChannelsList from '../components/ChannelsList';
 import MessagesList from '../components/MessagesList';
 import MessageForm from '../components/MessageForm';
@@ -42,30 +42,30 @@ function ChatPage() {
   useEffect(() => {
     if (!user || isLoading) return;
 
-    const socket = initSocket(user.token);
+    const socket = getSocket(user.token);
 
-    socket.on('newMessage', (message) => {
+    const onNewMessage = (message) => {
       dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
         draft.push(message);
       }));
-    });
+    };
 
-    socket.on('newChannel', (channel) => {
+    const onNewChannel = (channel) => {
       dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         if (!draft.some((ch) => ch.id === channel.id)) {
           draft.push(channel);
         }
       }));
-    });
+    };
 
-    socket.on('renameChannel', (channel) => {
+    const onRenameChannel = (channel) => {
       dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         const idx = draft.findIndex((ch) => ch.id === channel.id);
         if (idx !== -1) draft[idx] = channel;
       }));
-    });
+    };
 
-    socket.on('removeChannel', ({ id }) => {
+    const onRemoveChannel = ({ id }) => {
       dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         const idx = draft.findIndex((ch) => ch.id === id);
         if (idx !== -1) draft.splice(idx, 1);
@@ -78,19 +78,34 @@ function ChatPage() {
       if (currentChannelIdRef.current === id) {
         dispatch(setCurrentChannel(null));
       }
-    });
+    };
 
-    socket.on('connect_error', () => {
+    const onConnectError = () => {
       toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
-    });
+    };
 
-    socket.on('disconnect', (reason) => {
+    const onDisconnect = (reason) => {
       if (reason !== 'io client disconnect') {
         toast.error(t('toasts.websocketError'), { toastId: 'websocket-error' });
       }
-    });
+    };
 
-    return () => closeSocket();
+    socket.on('newMessage', onNewMessage);
+    socket.on('newChannel', onNewChannel);
+    socket.on('renameChannel', onRenameChannel);
+    socket.on('removeChannel', onRemoveChannel);
+    socket.on('connect_error', onConnectError);
+    socket.on('disconnect', onDisconnect);
+
+    return () => {
+      socket.off('newMessage', onNewMessage);
+      socket.off('newChannel', onNewChannel);
+      socket.off('renameChannel', onRenameChannel);
+      socket.off('removeChannel', onRemoveChannel);
+      socket.off('connect_error', onConnectError);
+      socket.off('disconnect', onDisconnect);
+      closeSocket();
+    };
   }, [user, isLoading, dispatch, t]);
 
   if (!user) return null;

@@ -2,28 +2,9 @@ import io from 'socket.io-client';
 
 let socket = null;
 
-export const initSocket = (token) => {
-  if (socket) {
-    socket.disconnect();
-  }
-  const SOCKET_URL = 'http://localhost:5001';
-
-    socket = io( {
-    auth: { token },
-    // transports: ['websocket'],
-  });
-  
-  // socket = io(SOCKET_URL, {
-  //   auth: { token },
-  //   transports: ['websocket'],
-  // });
-  
-  return socket;
-};
-
-export const getSocket = () => {
+export const getSocket = (token) => {
   if (!socket) {
-    throw new Error('Socket not initialized');
+    socket = io({ auth: { token } });
   }
   return socket;
 };
