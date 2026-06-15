@@ -3,16 +3,13 @@ import { clearUser } from './authSlice';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/v1',
-  prepareHeaders: (headers) => {
-    try {
-      const raw = localStorage.getItem('user');
-      if (raw) {
-        const { token } = JSON.parse(raw);
-        if (token) headers.set('Authorization', `Bearer ${token}`);
-      }
-    } catch { /* ignore */ }
-    return headers;
-  },
+  prepareHeaders: (headers, { getState }) => {
+  const user = getState().auth.user;
+  if (user?.token) {
+    headers.set('Authorization', `Bearer ${user.token}`);
+  }
+  return headers;
+},
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
