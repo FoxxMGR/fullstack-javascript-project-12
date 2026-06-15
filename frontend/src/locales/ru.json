@@ -40,6 +40,7 @@
       "addChannel": "Добавить канал",
       "renameChannel": "Переименовать канал",
       "deleteChannel": "Удалить канал",
+      "manageChannel": "Управление каналом",
       "channelName": "Имя канала",
       "channelNamePlaceholder": "например: general",
       "cancel": "Отмена",

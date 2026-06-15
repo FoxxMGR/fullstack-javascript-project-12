@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button, Container, Row, Col, Alert } from 'react-bootstrap';
@@ -10,8 +8,6 @@ import { useAuth } from '../hooks/useAuth';
 function SignupPage() {
   const { t } = useTranslation();
   const { signup, error: authError, loading: authLoading } = useAuth();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const getValidationSchema = () => Yup.object({
     username: Yup.string()
@@ -27,24 +23,8 @@ function SignupPage() {
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      await signup(values.username, values.password);
-    } catch (err) {
-      let errorMessage = t('errors.signupFailed');
-      if (err.response?.status === 409) {
-        errorMessage = t('errors.userExists');
-      } else if (!err.response) {
-        errorMessage = t('errors.networkError');
-      }
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-    }
+    await signup(values.username, values.password);
+    setSubmitting(false);
   };
 
   return (
@@ -53,9 +33,9 @@ function SignupPage() {
         <Col md={6}>
           <h2 className="text-center mb-4">{t('signup.title')}</h2>
 
-          {(error || authError) && (
+          {authError && (
             <Alert variant="danger" className="mb-3">
-              {error || authError}
+              {authError}
             </Alert>
           )}
 
@@ -112,9 +92,9 @@ function SignupPage() {
                   type="submit"
                   variant="primary"
                   className="w-100 mb-3"
-                  disabled={isSubmitting || loading || authLoading}
+                  disabled={isSubmitting || authLoading}
                 >
-                  {loading ? '...' : t('signup.submit')}
+                  {authLoading ? '...' : t('signup.submit')}
                 </Button>
 
                 <div className="text-center">

@@ -16,7 +16,7 @@ function ChannelMenu({ channelId, isDefault }) {
         className="text-dark p-0"
         style={{ textDecoration: 'none' }}
       >
-        Управление каналом
+        {t('modals.manageChannel')}
       </Dropdown.Toggle>
       <Dropdown.Menu>
         <Dropdown.Item onClick={() => dispatch(openModal({ type: 'rename', channelId }))}>
