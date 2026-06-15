@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Navbar, Nav, Button, Container } from 'react-bootstrap';
+import { Navbar, Button, Container } from 'react-bootstrap';
 import { useAuth } from '../hooks/useAuth';
 
 function Header() {
@@ -13,17 +13,11 @@ function Header() {
         <Navbar.Brand as={Link} to="/">
           {t('header.brand')}
         </Navbar.Brand>
-        <Nav className="ms-auto">
-          {user ? (
-            <Button variant="outline-danger" size="sm" onClick={logout}>
-              {t('header.logout')}
-            </Button>
-          ) : (
-            <Button variant="outline-primary" size="sm" as={Link} to="/login">
-              {t('header.login')}
-            </Button>
-          )}
-        </Nav>
+        {user && (
+          <Button variant="outline-danger" size="sm" onClick={logout}>
+            {t('header.logout')}
+          </Button>
+        )}
       </Container>
     </Navbar>
   );
