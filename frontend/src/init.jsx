@@ -59,11 +59,13 @@ const init = async (socket) => {
       getDefaultMiddleware().concat(chatApi.middleware),
   });
 
-  socket.on('newMessage', (payload) => {
-    store.dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
-      draft.push(payload);
-    }));
-  });
+  if (socket) {
+    socket.on('newMessage', (payload) => {
+      store.dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
+        draft.push(payload);
+      }));
+    });
+  }
 
   // Rollbar включаем только для продакшна
   new Rollbar(rollbarConfig);
