@@ -1,3 +1,17 @@
 import io from 'socket.io-client';
 
-export const createSocket = (token) => io({ auth: { token } });
+let socket = null;
+
+export const getSocket = (token) => {
+  if (!socket) {
+    socket = io({ auth: { token } });
+  }
+  return socket;
+};
+
+export const closeSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+};
