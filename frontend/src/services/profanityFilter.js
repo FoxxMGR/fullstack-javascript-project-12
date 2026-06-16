@@ -2,6 +2,7 @@ import leoProfanity from 'leo-profanity';
 
 export const initProfanity = () => {
   leoProfanity.loadDictionary('ru');
+  leoProfanity.loadDictionary('en');
 };
 
 export const containsProfanity = (text) => {
