@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { initReactI18next, I18nextProvider } from 'react-i18next';
+import { I18nextProvider } from 'react-i18next';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider as ReduxProvider } from 'react-redux';
 import { StrictMode } from 'react';
@@ -39,7 +39,6 @@ const init = async (socket) => {
   const i18n = i18next.createInstance();
 
   await i18n
-    .use(initReactI18next)
     .init({
       resources,
       lng: 'ru',
