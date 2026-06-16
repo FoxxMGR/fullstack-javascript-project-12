@@ -8,4 +8,6 @@ const socket = token ? getSocket(token) : null;
 
 init(socket).then((vdom) => {
   createRoot(document.getElementById('root')).render(vdom);
+}).catch((err) => {
+  console.error('Init failed:', err);
 });
