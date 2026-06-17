@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import i18next from 'i18next';
 import { initReactI18next, I18nextProvider } from 'react-i18next';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider as ReduxProvider } from 'react-redux';
@@ -36,17 +36,26 @@ const rollbarConfig = {
 
 const init = async (socket) => {
   initProfanity();
+  console.log('[init] profanity loaded');
 
-  await i18n
-    .use(initReactI18next)
-    .init({
-      resources,
-      lng: 'ru',
-      fallbackLng: 'ru',
-      interpolation: {
-        escapeValue: false,
-      },
-    });
+  const i18n = i18next.createInstance();
+  console.log('[init] i18n instance created');
+
+  try {
+    await i18n
+      .use(initReactI18next)
+      .init({
+        resources,
+        lng: 'ru',
+        fallbackLng: 'ru',
+        interpolation: {
+          escapeValue: false,
+        },
+      });
+    console.log('[init] i18n initialized');
+  } catch (err) {
+    console.error('[init] i18n init failed:', err);
+  }
 
   const store = configureStore({
     reducer: {
