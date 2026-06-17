@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import { I18nextProvider } from 'react-i18next';
+import { initReactI18next, I18nextProvider } from 'react-i18next';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider as ReduxProvider } from 'react-redux';
 import { Provider as RollbarProvider, ErrorBoundary } from '@rollbar/react';
@@ -37,14 +37,16 @@ const rollbarConfig = {
 const init = async (socket) => {
   initProfanity();
 
-  await i18n.init({
-    resources,
-    lng: 'ru',
-    fallbackLng: 'ru',
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+  await i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: 'ru',
+      fallbackLng: 'ru',
+      interpolation: {
+        escapeValue: false,
+      },
+    });
 
   const store = configureStore({
     reducer: {
