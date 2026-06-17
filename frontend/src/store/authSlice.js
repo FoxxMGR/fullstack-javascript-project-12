@@ -1,20 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
-
-const getUserFromStorage = () => {
-  try {
-    const raw = localStorage.getItem('user');
-    if (!raw) return null;
-    const { token, username } = JSON.parse(raw);
-    return token && username ? { token, username } : null;
-  } catch {
-    return null;
-  }
-};
+import storage from '../services/storage';
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: getUserFromStorage(),
+    user: storage.getUser(),
   },
   reducers: {
     setUser: (state, action) => {

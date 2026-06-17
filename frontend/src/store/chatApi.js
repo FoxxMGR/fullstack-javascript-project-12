@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { clearUser } from './authSlice';
+import storage from '../services/storage';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api/v1',
@@ -15,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
   if (result.error?.status === 401) {
-    localStorage.removeItem('user');
+    storage.removeUser();
     api.dispatch(clearUser());
   }
   return result;

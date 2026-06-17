@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import getRollbar from '../services/rollbar';
+import storage from '../services/storage';
 import { authAPI } from '../services/api';
 import { chatApi } from '../store/chatApi';
 import { setUser } from '../store/authSlice';
@@ -24,7 +25,7 @@ export const useAuth = () => {
       const response = await authAPI.login(username, password);
       const { token } = response.data;
 
-      localStorage.setItem('user', JSON.stringify({ token, username }));
+      storage.setUser({ token, username });
       dispatch(setUser({ token, username }));
       toast.success(t('toasts.welcome'));
       navigate('/');
@@ -69,7 +70,7 @@ export const useAuth = () => {
   }, [login, t]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('user');
+    storage.removeUser();
     dispatch(setUser(null));
     dispatch(chatApi.util.resetApiState());
     toast.info(t('toasts.logout'));
