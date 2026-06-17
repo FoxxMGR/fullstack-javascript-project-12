@@ -2,8 +2,8 @@ import i18next from 'i18next';
 import { initReactI18next, I18nextProvider } from 'react-i18next';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider as ReduxProvider } from 'react-redux';
+import { Provider as RollbarProvider, ErrorBoundary } from '@rollbar/react';
 import { StrictMode } from 'react';
-import Rollbar from 'rollbar';
 
 import authReducer from './store/authSlice.js';
 import chatReducer from './store/chatSlice.js';
@@ -69,18 +69,25 @@ const init = async (socket) => {
     });
   }
 
-  // Rollbar включаем только для продакшна
-  if (import.meta.env.PROD) {
-    new Rollbar(rollbarConfig);
-  }
+  const fallbackUI = () => (
+    <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+      <h2>{i18n.t('errors.somethingWentWrong')}</h2>
+      <p>{i18n.t('errors.workingOnIt')}</p>
+      <button onClick={() => window.location.reload()}>{i18n.t('errors.reloadPage')}</button>
+    </div>
+  );
 
   const vdom = (
     <StrictMode>
-      <ReduxProvider store={store}>
-        <I18nextProvider i18n={i18n}>
-          <App />
-        </I18nextProvider>
-      </ReduxProvider>
+      <RollbarProvider config={rollbarConfig}>
+        <ErrorBoundary fallbackUI={fallbackUI}>
+          <ReduxProvider store={store}>
+            <I18nextProvider i18n={i18n}>
+              <App />
+            </I18nextProvider>
+          </ReduxProvider>
+        </ErrorBoundary>
+      </RollbarProvider>
     </StrictMode>
   );
 
