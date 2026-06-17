@@ -9,6 +9,7 @@ import authReducer from './store/authSlice.js';
 import chatReducer from './store/chatSlice.js';
 import { chatApi } from './store/chatApi.js';
 import { initProfanity } from './services/profanityFilter.js';
+import logger from './services/logger.js';
 import ruTranslations from './locales/ru.json';
 import App from './App.jsx';
 
@@ -57,6 +58,7 @@ const init = async (socket) => {
 
   if (socket) {
     socket.on('newMessage', (payload) => {
+      logger('newMessage', payload);
       store.dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
         draft.push(payload);
       }));
