@@ -3,13 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { useRollbar } from '@rollbar/react';
+import getRollbar from '../services/rollbar';
 import { authAPI } from '../services/api';
 import { chatApi } from '../store/chatApi';
 import { setUser } from '../store/authSlice';
 
 export const useAuth = () => {
-  const rollbar = useRollbar();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
@@ -30,7 +29,7 @@ export const useAuth = () => {
       toast.success(t('toasts.welcome'));
       navigate('/');
     } catch (err) {
-      rollbar.error('Ошибка авторизации', {
+      getRollbar().error('Ошибка авторизации', {
         error: err.message,
         status: err.response?.status,
       });
@@ -46,7 +45,7 @@ export const useAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [t, navigate, rollbar, dispatch]);
+  }, [t, navigate, dispatch]);
 
   const signup = useCallback(async (username, password) => {
     setLoading(true);

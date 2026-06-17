@@ -1,17 +1,5 @@
 import axios from 'axios';
-import Rollbar from 'rollbar';
-
-let rollbar = null;
-
-const getRollbar = () => {
-  if (!rollbar) {
-    rollbar = new Rollbar({
-      accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
-      environment: import.meta.env.VITE_ROLLBAR_ENVIRONMENT || 'development',
-    });
-  }
-  return rollbar;
-};
+import getRollbar from './rollbar';
 
 const api = axios.create();
 
