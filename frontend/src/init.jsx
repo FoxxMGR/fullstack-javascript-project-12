@@ -10,6 +10,7 @@ import authReducer from './store/authSlice.js';
 import chatReducer, { setCurrentChannel } from './store/chatSlice.js';
 import { chatApi } from './store/chatApi.js';
 import { initProfanity } from './services/profanityFilter.js';
+import { getSocket, closeSocket } from './services/socket.js';
 import logger from './services/logger.js';
 import ruTranslations from './locales/ru.json';
 import App from './App.jsx';
@@ -35,7 +36,7 @@ const rollbarConfig = {
   ],
 };
 
-const init = async (socket) => {
+const init = async () => {
   initProfanity();
 
   const i18n = i18next.createInstance();
@@ -61,15 +62,18 @@ const init = async (socket) => {
       getDefaultMiddleware().concat(chatApi.middleware),
   });
 
-  if (socket) {
-    socket.on('newMessage', (payload) => {
+  const { user } = store.getState().auth;
+  let socket = user?.token ? getSocket(user.token) : null;
+
+  const setupSocket = (sock) => {
+    sock.on('newMessage', (payload) => {
       logger('newMessage', payload);
       store.dispatch(chatApi.util.updateQueryData('getMessages', undefined, (draft) => {
         draft.push(payload);
       }));
     });
 
-    socket.on('newChannel', (channel) => {
+    sock.on('newChannel', (channel) => {
       logger('newChannel', channel);
       store.dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         if (!draft.some((ch) => ch.id === channel.id)) {
@@ -78,7 +82,7 @@ const init = async (socket) => {
       }));
     });
 
-    socket.on('renameChannel', (channel) => {
+    sock.on('renameChannel', (channel) => {
       logger('renameChannel', channel);
       store.dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         const idx = draft.findIndex((ch) => ch.id === channel.id);
@@ -86,7 +90,7 @@ const init = async (socket) => {
       }));
     });
 
-    socket.on('removeChannel', ({ id }) => {
+    sock.on('removeChannel', ({ id }) => {
       logger('removeChannel', id);
       store.dispatch(chatApi.util.updateQueryData('getChannels', undefined, (draft) => {
         const idx = draft.findIndex((ch) => ch.id === id);
@@ -103,18 +107,36 @@ const init = async (socket) => {
       }
     });
 
-    socket.on('connect_error', () => {
+    sock.on('connect_error', () => {
       logger('connect_error');
       toast.error(i18n.t('toasts.websocketError'), { toastId: 'websocket-error' });
     });
 
-    socket.on('disconnect', (reason) => {
+    sock.on('disconnect', (reason) => {
       logger('disconnect', reason);
       if (reason !== 'io client disconnect') {
         toast.error(i18n.t('toasts.websocketError'), { toastId: 'websocket-error' });
       }
     });
+  };
+
+  if (socket) {
+    setupSocket(socket);
   }
+
+  store.subscribe(() => {
+    const prevUser = socket ? true : false;
+    const { user: currentUser } = store.getState().auth;
+    const hasUser = !!currentUser?.token;
+
+    if (hasUser && !prevUser) {
+      socket = getSocket(currentUser.token);
+      setupSocket(socket);
+    } else if (!hasUser && prevUser) {
+      closeSocket();
+      socket = null;
+    }
+  });
 
   const fallbackUI = () => (
     <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
